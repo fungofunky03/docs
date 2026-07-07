@@ -99,6 +99,12 @@ brew upgrade --all
     | `pigz` | Parallel gzip |
     | `pv` | Monitor data through a pipe |
     | `lynx` | Terminal web browser |
+    | `dark-mode` | Toggle macOS Dark Mode from the terminal |
+    | `lua` | Lua scripting language |
+    | `rhino` | JavaScript engine (Mozilla Rhino) |
+    | `speedtest_cli` | Internet speed test from the command line |
+    | `webkit2png` | Render web pages to PNG from the command line |
+    | `zopfli` | High-compression zlib/deflate/gzip tool |
 
     ```bash
     brew install wget --with-iri
@@ -108,7 +114,21 @@ brew upgrade --all
     brew install homebrew/dupes/openssh
     brew install homebrew/dupes/screen
     brew install ack tree rename ssh-copy-id pandoc
+    brew install dark-mode lua rhino speedtest_cli webkit2png zopfli
     ```
+  </Accordion>
+
+  <Accordion title="JavaScript Runtimes">
+    Two additional JavaScript runtimes are also installed:
+
+    ```bash
+    brew install ringojs   # RingoJS (JavaScript on the JVM)
+    brew install narwhal   # Narwhal JS standard library
+    ```
+
+    <Note>
+      These must be installed in this order — `ringojs` before `narwhal` — due to a dependency requirement.
+    </Note>
   </Accordion>
 
   <Accordion title="Programming Languages">
@@ -148,18 +168,29 @@ brew upgrade --all
     | Formula | Purpose |
     |---|---|
     | `aircrack-ng` | Wi-Fi security auditing |
-    | `nmap` | Network scanner |
-    | `hydra` | Network login cracker |
-    | `john` | Password cracker |
-    | `sqlmap` | SQL injection tool |
+    | `bfg` | Repo cleaner / sensitive-data remover |
     | `binutils` | Binary analysis tools |
     | `binwalk` | Firmware analysis |
+    | `cifer` | Classical cipher cracker |
+    | `dex2jar` | Android DEX to JAR converter |
+    | `dns2tcp` | DNS tunneling tool |
     | `fcrackzip` | ZIP password cracker |
+    | `foremost` | File carving / recovery tool |
+    | `hashpump` | Hash length extension attacks |
+    | `hydra` | Network login cracker |
+    | `john` | Password cracker |
+    | `knock` | Port-knock client |
+    | `netpbm` | Image manipulation tools |
+    | `nmap` | Network scanner |
+    | `pngcheck` | PNG file integrity checker |
+    | `socat` | Multipurpose relay tool |
+    | `sqlmap` | SQL injection tool |
     | `tcpflow` | TCP stream capture |
     | `tcpreplay` | Network traffic replay |
-    | `pngcheck` | PNG file integrity checker |
-    | `hashpump` | Hash length extension attacks |
-    | `knock` | Port-knock client |
+    | `tcptrace` | TCP connection analysis |
+    | `ucspi-tcp` | TCP client-server tools (`tcpserver` etc.) |
+    | `xpdf` | PDF viewer and tools |
+    | `xz` | XZ compression utility |
   </Accordion>
 
   <Accordion title="Infrastructure & Services">
@@ -168,8 +199,14 @@ brew upgrade --all
     brew install docker               # Docker CLI
     brew install boot2docker          # Docker VM for macOS
     brew install libxml2 libxslt      # XML/XSLT parsing libraries
+    brew link libxml2 --force
+    brew link libxslt --force
     brew install pkg-config libffi    # Foreign function interface
     ```
+
+    <Note>
+      `docker` and `boot2docker` are installed as Homebrew formulae (CLI tools), not as Cask desktop apps.
+    </Note>
   </Accordion>
 
   <Accordion title="Desktop Apps via Homebrew Cask">
@@ -199,7 +236,6 @@ brew upgrade --all
     | Atom | Open-source code editor |
     | VirtualBox | Virtual machine manager |
     | Vagrant | Development environment manager |
-    | Docker | Container platform |
     | MacDown | Markdown editor |
     | Java | JDK for Android and other tooling |
     | XQuartz | X11 window system for macOS |
@@ -207,14 +243,20 @@ brew upgrade --all
     ```bash
     brew cask install --appdir="/Applications" alfred
     brew cask install --appdir="~/Applications" iterm2
+    brew cask install --appdir="~/Applications" java
+    brew cask install --appdir="~/Applications" xquartz
     brew cask install --appdir="/Applications" sublime-text
     brew cask install --appdir="/Applications" atom
     brew cask install --appdir="/Applications" virtualbox
     brew cask install --appdir="/Applications" vagrant
+    brew cask install --appdir="/Applications" macdown
     brew cask install --appdir="/Applications" google-chrome
     brew cask install --appdir="/Applications" firefox
+    brew cask install --appdir="/Applications" skype
     brew cask install --appdir="/Applications" slack
     brew cask install --appdir="/Applications" dropbox
+    brew cask install --appdir="/Applications" evernote
+    brew cask install --appdir="/Applications" 1password
     ```
   </Accordion>
 

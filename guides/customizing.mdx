@@ -31,7 +31,7 @@ The project README says it plainly: *"dev-setup is geared to be more of an organ
 
     | Argument | Script | Purpose |
     |---|---|---|
-    | `bootstrap` | `bootstrap.sh` | Sync dotfiles to `~` |
+    | `bootstrap` | *(tarball download)* | Download the dev-setup repo tarball to `~` |
     | `osxprep` | `osxprep.sh` | macOS updates + Xcode CLT |
     | `brew` | `brew.sh` | Homebrew formulae and Cask apps |
     | `osx` | `osx.sh` | macOS developer defaults |
@@ -139,16 +139,16 @@ gpip() {
 
 ### Update the dotfiles
 
-Pull the latest changes from the repo and re-run `bootstrap.sh` to sync your home directory:
+Re-run `bootstrap.sh` to pull the latest changes and sync your home directory. The script automatically pulls from the remote before syncing:
 
 ```bash
-cd dev-setup && git pull && ./bootstrap.sh
+source bootstrap.sh
 ```
 
 To skip the confirmation prompt:
 
 ```bash
-cd dev-setup && git pull && set -- -f; source bootstrap.sh
+set -- -f; source bootstrap.sh
 ```
 
 ### Re-run individual scripts

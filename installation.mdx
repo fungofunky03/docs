@@ -1,5 +1,5 @@
 ---
-title: "Installing Dev Setup on macOS"
+title: "Dev Setup Installation: Scripts, Modules, and Launcher"
 sidebarTitle: "Installation"
 description: "Step-by-step instructions for cloning the dev-setup repository, running the preparation script, and choosing which setup modules to install."
 ---
@@ -119,7 +119,7 @@ The table below lists every module and what it installs. Pass these names to `.d
 | `osxprep` | `osxprep.sh` | Updates macOS via `softwareupdate` and installs Xcode Command Line Tools |
 | `brew` | `brew.sh` | Installs Homebrew, GNU core utilities, Python, Ruby/rbenv, Vim, wget, and a full suite of developer GUI apps via Homebrew Cask (iTerm2, Sublime Text, Chrome, VirtualBox, Docker, etc.) |
 | `osx` | `osx.sh` | Applies developer-friendly macOS system defaults — Finder settings, trackpad behavior, SSD optimizations, and more |
-| `pydata` | `pydata.sh` | Creates `py2-data` and `py3-data` virtualenvs; installs pip, virtualenv, virtualenvwrapper, NumPy, SciPy, Pandas, Matplotlib, Seaborn, Scikit-learn, IPython Notebook, Flask, and Bokeh |
+| `pydata` | `pydata.sh` | Creates `py2-data` and `py3-data` virtualenvs; installs pip, virtualenv, virtualenvwrapper, NumPy, SciPy, Pandas, Matplotlib, Seaborn, Scikit-learn, Sympy, IPython Notebook, Flask, Bokeh, and SQLAlchemy |
 | `aws` | `aws.sh` | Installs AWS CLI, Boto, S3cmd, mrjob (MapReduce), and sets up Spark with IPython Notebook integration inside the `py2-data` virtualenv |
 | `datastores` | `datastores.sh` | Installs MySQL, PostgreSQL, MongoDB, Redis, and Elasticsearch via Homebrew; also installs MySQL Workbench |
 | `web` | `web.sh` | Installs Node.js, then uses npm to install CoffeeScript, Grunt CLI, JSHint, and Less |

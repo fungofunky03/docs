@@ -17,7 +17,7 @@ The `.vimrc` makes the following changes over Vim's defaults:
 - **Whitespace visualization**: tabs (`▸`), trailing spaces (`·`), end-of-line (`¬`), and non-breaking spaces (`_`) are made visible
 - **2-space tab width** (`tabstop=2`)
 - **OS clipboard** integration (requires `+clipboard` build)
-- **Persistent undo**, centralized backups, and centralized swap files under `~/.vim/`
+- **Centralized backups** and centralized swap files under `~/.vim/` (undo directory is also configured; enable persistent undo by adding `set undofile` to your overrides)
 - **Mouse support** in all modes
 - **Per-directory `.vimrc`** files enabled (`exrc`) with unsafe-command protection (`secure`)
 
@@ -184,10 +184,10 @@ Dev Setup creates three subdirectories under `~/.vim/` to keep generated files o
 |-----------|---------|
 | `~/.vim/backups` | Backup files (`~` files) |
 | `~/.vim/swaps` | Swap files (`.swp`) |
-| `~/.vim/undo` | Persistent undo history |
+| `~/.vim/undo` | Undo history (add `set undofile` to enable persistence across sessions) |
 
 <Tip>
-  Create these directories before your first session to avoid Vim warnings:
+  These directories ship inside the dev-setup repository and are synced to `~/.vim/` automatically when you run `bootstrap.sh`. If you ever need to recreate them manually, run:
   ```bash
   mkdir -p ~/.vim/{backups,swaps,undo}
   ```

@@ -51,13 +51,13 @@ for option in autocd globstar; do
 done;
 
 # Enable tab completion for `g` (alias for git)
-if type _git &> /dev/null; then
+if type _git &> /dev/null && [ -f /usr/local/etc/bash_completion.d/git-completion.bash ]; then
     complete -o default -o nospace -F _git g;
 fi;
 
 # Add tab completion for SSH hostnames from ~/.ssh/config
 [ -e "$HOME/.ssh/config" ] && complete -o "default" -o "nospace" \
-  -W "$(grep "^Host" ~/.ssh/config | grep -v "[?*]" | cut -d " " -f2-)" scp sftp ssh;
+  -W "$(grep "^Host" ~/.ssh/config | grep -v "[?*]" | cut -d " " -f2- | tr ' ' '\n')" scp sftp ssh;
 ```
 
 ## .bash_prompt: Custom Prompt with Git Status

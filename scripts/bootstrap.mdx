@@ -4,7 +4,11 @@ sidebarTitle: "bootstrap.sh"
 description: "bootstrap.sh copies all dotfiles from the dev-setup repository to your home directory using rsync, then reloads your Bash profile automatically."
 ---
 
-`bootstrap.sh` plants the dev-setup dotfiles into your home directory so that every subsequent terminal session benefits from the custom aliases, prompt, exports, functions, Git config, Vim settings, and more. It uses `rsync` to copy only the relevant files, skips everything that should stay in the repository, and immediately sources your new `~/.bash_profile` so the changes take effect without reopening your terminal.
+`bootstrap.sh` plants the dev-setup dotfiles into your home directory so that every subsequent terminal session benefits from the custom aliases, prompt, exports, functions, Git config, Vim settings, and more. It first pulls the latest changes from the remote repository, then uses `rsync` to copy only the relevant files, skips everything that should stay in the repository, and immediately sources your new `~/.bash_profile` so the changes take effect without reopening your terminal.
+
+<Note>
+  `bootstrap.sh` must be run from inside a cloned copy of the dev-setup repository. It calls `git pull origin master` at startup to ensure you have the latest dotfiles before syncing. If you haven't cloned the repository yet, use the `.dots bootstrap` command instead — it downloads everything with `curl` and does not require a prior clone.
+</Note>
 
 <Warning>
   Running `bootstrap.sh` will **overwrite existing files** in your home directory with the versions from the dev-setup repository. You will be prompted to confirm before anything is written — unless you pass the `--force` flag, in which case the sync proceeds immediately without asking.
@@ -39,20 +43,30 @@ description: "bootstrap.sh copies all dotfiles from the dev-setup repository to 
 
     Use this when scripting or when you know you want to overwrite without prompting.
   </Tab>
-  <Tab title="Via .dots">
+  <Tab title="Via .dots (no clone needed)">
     ```bash
     ./.dots bootstrap
     ```
 
-    The `.dots` launcher runs the bootstrap sync as part of the automated setup flow.
+    When run through the `.dots` launcher, the bootstrap step works differently: instead of rsync from a local clone, it downloads the repository as a tarball directly into your home directory using `curl`:
+
+    ```bash
+    cd ~ && curl -#L https://github.com/donnemartin/dev-setup/tarball/master | tar -xzv --strip-components 1 --exclude={README.md,LICENSE}
+    ```
+
+    Use this method when you haven't cloned the repository yet.
   </Tab>
 </Tabs>
 
 ## How It Works
 
-The script uses `rsync` with a set of explicit exclusions to copy only the dotfiles — not the repository metadata, the script itself, or documentation:
+The script first pulls the latest commits from the remote, then uses `rsync` with a set of explicit exclusions to copy only the dotfiles — not the repository metadata, the script itself, or documentation:
 
 ```bash
+cd "$(dirname "${BASH_SOURCE}")";
+
+git pull origin master;
+
 function doIt() {
     rsync --exclude ".git/" --exclude ".DS_Store" --exclude "bootstrap.sh" \
         --exclude "README.md" --exclude "LICENSE" -avh --no-perms . ~;
