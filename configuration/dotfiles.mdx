@@ -1,0 +1,98 @@
+---
+title: "Dotfiles Overview: Shell, Editor, and Tool Config"
+sidebarTitle: "Dotfiles"
+description: "Dev Setup includes curated dotfiles for Bash, Git, Vim, curl, wget, and more — synced to your home directory by bootstrap.sh automatically."
+---
+
+Dev Setup ships a carefully curated collection of dotfiles that configure your shell environment, editor, version-control workflow, and network tools. When you run `bootstrap.sh`, every file in the repository is synced to your home directory (`~`) via `rsync`, and your shell is immediately reloaded so the changes take effect without opening a new terminal.
+
+## Syncing Your Dotfiles
+
+Run `bootstrap.sh` from inside the cloned repository to copy all dotfiles to your home directory:
+
+<Steps>
+  <Step title="Clone or update the repository">
+    ```bash
+    git clone https://github.com/donnemartin/dev-setup.git && cd dev-setup
+    ```
+  </Step>
+  <Step title="Run bootstrap.sh">
+    ```bash
+    source bootstrap.sh
+    ```
+    The script prompts you before overwriting any existing files. To skip the prompt and force-sync:
+    ```bash
+    set -- -f; source bootstrap.sh
+    ```
+  </Step>
+  <Step title="Restart your terminal">
+    Some changes — especially to `$PATH` and shell options — only fully apply in a fresh login shell. Quit and reopen your terminal after the first run.
+  </Step>
+</Steps>
+
+<Note>
+  Running `bootstrap.sh` uses `rsync` with `--no-perms` and automatically excludes `.git/`, `README.md`, `bootstrap.sh`, and `LICENSE` from being copied. Only the dotfiles themselves land in `~`.
+</Note>
+
+## Included Dotfiles
+
+The table below lists every dotfile Dev Setup provides and what it configures.
+
+| File | Purpose |
+|------|---------|
+| `.bash_profile` | Main Bash entry point. Sources `.path`, `.bash_prompt`, `.exports`, `.aliases`, `.functions`, and `.extra` in order. Also configures `shopt` options, tab completion, and SSH hostname completion. |
+| `.bashrc` | Loaded by non-login interactive shells. Delegates to `.bash_profile` when `$PS1` is set. |
+| `.bash_prompt` | Solarized Dark–themed prompt with Git branch, dirty-state indicators (`+`, `!`, `?`, `$`), and SSH/root highlighting. |
+| `.aliases` | Dozens of shell shortcuts grouped by navigation, file listing, network, macOS utilities, and developer tools. |
+| `.exports` | Key environment variable exports: `EDITOR`, `LANG`, `HISTSIZE`, `MANPAGER`, `GREP_OPTIONS`, and Node REPL history settings. |
+| `.functions` | Utility shell functions: `mkd`, `fs`, `targz`, `calc`, `server`, `json`, `digga`, `gz`, and more. |
+| `.gitconfig` | Git aliases, color settings, core options (whitespace handling, `trustctime`), merge/push defaults, and GitHub/Gist URL shorthands. |
+| `.gitignore` | Global gitignore patterns for macOS artifacts (`.DS_Store`, `Thumbs.db`), compiled Python (`.pyc`), IDE folders (`.idea`), and credential files. |
+| `.gitattributes` | Line-ending normalization rules (currently documented but disabled pending upstream fix). |
+| `.vimrc` | Vim settings: Solarized Dark colorscheme, syntax highlighting, relative line numbers, smart search, whitespace visualization, and custom key mappings. |
+| `.gvimrc` | GUI Vim overrides: Monaco 14pt font, no cursor blinking in normal mode, improved line spacing. |
+| `.inputrc` | Readline configuration: case-insensitive tab completion, history-search keybindings (`↑`/`↓`), UTF-8 I/O, and symlink trailing-slash behavior. |
+| `.editorconfig` | Cross-editor indentation standard: UTF-8, LF endings, tab indentation by default, 4-space indentation for `.py` files (PEP 8). |
+| `.curlrc` | Sets a realistic User-Agent (IE 9), enables auto-referer on redirects, and sets a 60-second connect timeout. |
+| `.wgetrc` | Configures wget with sensible defaults: timestamps, 60 s timeout, 3 retries, FTP link following, extension guessing, and server-response printing. |
+| `.screenrc` | Suppresses GNU Screen's startup message, sets a 32,000-line scrollback buffer, and enables UTF-8 by default. |
+| `.s3cfg` | Template configuration for `s3cmd` with placeholder AWS credentials, GPG encryption settings, and sensible transfer defaults. |
+| `.mrjob.conf` | Template MRJob configuration for running Python MapReduce jobs on AWS Elastic MapReduce (EMR). |
+
+## Customizing Without Forking
+
+Dev Setup is designed so you never need to edit its dotfiles directly. Instead, create a `~/.extra` file — `.bash_profile` sources it last, after all other dotfiles, so anything you put there wins.
+
+<Note>
+  `~/.extra` is listed in `.gitignore`, so it will never be committed or overwritten by a future `bootstrap.sh` run. Use it for personal exports, aliases, and any secret credentials you never want in version control.
+</Note>
+
+A typical `~/.extra` sets your Git identity and any tool-specific overrides:
+
+```bash
+# ~/.extra — personal settings, never committed
+
+# Git credentials
+GIT_AUTHOR_NAME="Your Name"
+GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+git config --global user.name "$GIT_AUTHOR_NAME"
+
+GIT_AUTHOR_EMAIL="you@example.com"
+GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+git config --global user.email "$GIT_AUTHOR_EMAIL"
+
+# Only run pip inside a virtualenv
+export PIP_REQUIRE_VIRTUALENV=true
+
+# Global pip helper that bypasses the restriction above
+gpip() {
+  PIP_REQUIRE_VIRTUALENV="" pip "$@"
+}
+```
+
+Similarly, if `~/.path` exists it is sourced before all other dotfiles so you can extend `$PATH` before any feature detection runs:
+
+```bash
+# ~/.path — prepend custom bin dirs
+export PATH="/usr/local/bin:$PATH"
+```

@@ -1,0 +1,98 @@
+---
+title: "Setup Scripts: Automate Your macOS Dev Tools"
+sidebarTitle: "Overview"
+description: "Dev Setup provides ten modular shell scripts that install and configure your macOS development environment. Run them all at once or pick only what you need."
+---
+
+Dev Setup is designed to be a modular, pick-what-you-need toolkit rather than a one-size-fits-all installer. Each script handles a single concern — system prep, package installation, OS defaults, or a specific development domain — so you can run only the pieces that apply to your workflow. Whether you're bootstrapping a brand-new Mac or adding a new language stack to an existing machine, the scripts compose cleanly without stepping on each other.
+
+## The .dots Launcher
+
+The `.dots` script is the single entry point that orchestrates everything. Pass it the names of the scripts you want to run as arguments, or use `all` to run every script in sequence.
+
+```bash
+# Run everything
+./.dots all
+
+# Run only the core setup scripts
+./.dots bootstrap osxprep brew osx
+
+# Run core setup plus data science, AWS, and data stores
+./.dots bootstrap osxprep brew osx pydata aws datastores
+
+# Run core setup plus web and Android development
+./.dots bootstrap osxprep brew osx web android
+```
+
+<Note>
+  `.dots` will prompt for your administrator password upfront and may ask again at certain stages. If a macOS update requires a restart, simply run `.dots` again after rebooting — it resumes where it left off.
+</Note>
+
+## All Scripts at a Glance
+
+<CardGroup cols={2}>
+  <Card title=".dots" icon="play">
+    The master launcher. Accepts script names as arguments and runs them in order. Supports `all` to execute every script in sequence.
+  </Card>
+  <Card title="bootstrap.sh" icon="folder-arrow-down" href="/scripts/bootstrap">
+    Syncs all dotfiles from the dev-setup repository to your home directory `~` using `rsync`, then reloads your Bash profile.
+  </Card>
+  <Card title="osxprep.sh" icon="apple" href="/scripts/osxprep">
+    Runs `softwareupdate` to install all available macOS updates, then installs the Xcode Command Line Tools via `xcode-select`.
+  </Card>
+  <Card title="brew.sh" icon="beer-mug-empty" href="/scripts/brew">
+    Installs Homebrew and a curated set of CLI tools, programming languages (Python, Ruby), and macOS desktop apps via Homebrew Cask.
+  </Card>
+  <Card title="osx.sh" icon="gear" href="/scripts/osx-defaults">
+    Applies over 100 developer-friendly macOS system defaults covering Finder, Dock, keyboard, trackpad, Safari, Terminal, and more.
+  </Card>
+  <Card title="pydata.sh" icon="chart-line">
+    Sets up Python virtual environments loaded with data analysis packages: NumPy, Pandas, Scikit-Learn, Matplotlib, IPython Notebook, and more.
+  </Card>
+  <Card title="aws.sh" icon="cloud">
+    Configures a cloud and big data development environment with Apache Spark, Hadoop MapReduce, AWS CLI, Boto, S3cmd, and Heroku.
+  </Card>
+  <Card title="datastores.sh" icon="database">
+    Installs and configures common data stores: MySQL, MySQL Workbench, MongoDB, Redis, and Elasticsearch.
+  </Card>
+  <Card title="web.sh" icon="globe">
+    Sets up a JavaScript web development environment with Node.js, npm, JSHint, and Less.
+  </Card>
+  <Card title="android.sh" icon="mobile">
+    Installs the full Android development stack: Java JDK, Android SDK, Android Studio, and IntelliJ IDEA Community Edition.
+  </Card>
+</CardGroup>
+
+## Running without Git
+
+If you haven't cloned the repository, you can download and run `.dots` directly with `curl`:
+
+```bash
+curl -O https://raw.githubusercontent.com/donnemartin/dev-setup/master/.dots && ./.dots [ARGS]
+```
+
+## Recommended Run Order
+
+When running scripts individually (rather than via `.dots all`), always follow this order to satisfy dependencies:
+
+<Steps>
+  <Step title="bootstrap.sh">
+    Sync dotfiles to your home directory first so all subsequent scripts pick up your shell configuration.
+  </Step>
+  <Step title="osxprep.sh">
+    Update macOS and install Xcode Command Line Tools. Many tools, including Homebrew, require these compilers.
+  </Step>
+  <Step title="brew.sh">
+    Install Homebrew and all CLI tools and desktop apps. This is a prerequisite for most domain-specific scripts.
+  </Step>
+  <Step title="osx.sh">
+    Apply macOS system defaults after your tools are installed so third-party app settings (Sublime Text, Chrome) are also configured.
+  </Step>
+  <Step title="Domain scripts">
+    Run any combination of `pydata.sh`, `aws.sh`, `datastores.sh`, `web.sh`, and `android.sh` based on your needs.
+  </Step>
+</Steps>
+
+<Tip>
+  You don't need to install everything. Review each script's source file before running it and comment out any formulae or settings that don't fit your workflow.
+</Tip>

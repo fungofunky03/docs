@@ -1,0 +1,233 @@
+---
+title: "Install MySQL, MongoDB, Redis & More on macOS"
+sidebarTitle: "Data Stores"
+description: "datastores.sh installs MySQL, PostgreSQL, MongoDB, Redis, and Elasticsearch on macOS using Homebrew, with MySQL Workbench included as a GUI client."
+---
+
+`datastores.sh` uses Homebrew to install five of the most commonly used data stores — MySQL, PostgreSQL, MongoDB, Redis, and Elasticsearch — along with MySQL Workbench as a graphical client. Running one script gives you a complete local persistence layer for web, data science, and back-end development projects.
+
+## Run the Script
+
+<CodeGroup>
+```bash Via .dots
+./.dots datastores
+```
+
+```bash Directly
+./datastores.sh
+```
+</CodeGroup>
+
+## What Gets Installed
+
+<CardGroup cols={3}>
+  <Card title="MySQL" icon="database">
+    Relational database — default port **3306**
+  </Card>
+  <Card title="PostgreSQL" icon="database">
+    Advanced relational database — default port **5432**
+  </Card>
+  <Card title="MongoDB" icon="database">
+    Document-oriented NoSQL database — default port **27017**
+  </Card>
+  <Card title="Redis" icon="database">
+    In-memory key-value store — default port **6379**
+  </Card>
+  <Card title="Elasticsearch" icon="database">
+    Distributed search and analytics engine — default port **9200**
+  </Card>
+  <Card title="MySQL Workbench" icon="window">
+    Official GUI client for MySQL schema design and queries
+  </Card>
+</CardGroup>
+
+## Managing Services with Homebrew
+
+Use `brew services` to start, stop, and restart any data store without remembering its daemon binary:
+
+```bash
+# Start a service (and re-start automatically on login)
+brew services start mysql
+brew services start postgresql
+brew services start mongodb
+brew services start redis
+brew services start elasticsearch
+
+# Stop a service
+brew services stop mysql
+
+# Restart a service
+brew services restart redis
+
+# View all service statuses
+brew services list
+```
+
+## Per Data Store Reference
+
+<Accordion title="MySQL — Port 3306">
+  MySQL is the world's most popular open-source relational database. It stores data in tables with rows and columns and uses standard SQL.
+
+  **Start / Stop**
+  ```bash
+  mysql.server start
+  mysql.server stop
+  mysql.server status
+  ```
+
+  Or with `brew services`:
+  ```bash
+  brew services start mysql
+  brew services stop mysql
+  ```
+
+  **Connect with the CLI client**
+  ```bash
+  mysql -uroot
+  ```
+
+  By default the `root` user has no password on a local Homebrew install. To set one:
+  ```bash
+  mysqladmin -u root password 'your-password'
+  ```
+
+  **Useful commands inside the MySQL shell**
+  ```sql
+  SHOW DATABASES;
+  CREATE DATABASE myapp;
+  USE myapp;
+  SHOW TABLES;
+  EXIT;
+  ```
+</Accordion>
+
+<Accordion title="PostgreSQL — Port 5432">
+  PostgreSQL is a powerful, standards-compliant relational database with advanced features such as JSON support, full-text search, and window functions.
+
+  **Start / Stop**
+  ```bash
+  brew services start postgresql
+  brew services stop postgresql
+  ```
+
+  **Connect with psql**
+  ```bash
+  psql postgres
+  ```
+
+  **Useful commands inside psql**
+  ```sql
+  \l              -- list databases
+  CREATE DATABASE myapp;
+  \c myapp        -- connect to a database
+  \dt             -- list tables
+  \q              -- quit
+  ```
+</Accordion>
+
+<Accordion title="MongoDB — Port 27017">
+  MongoDB is a document-oriented NoSQL database that stores data as flexible JSON-like BSON documents. It is well-suited for hierarchical or rapidly evolving data models.
+
+  **Start the server**
+  ```bash
+  mongod
+  ```
+
+  Or as a background service:
+  ```bash
+  brew services start mongodb
+  ```
+
+  **Connect with the Mongo shell**
+  ```bash
+  mongo
+  ```
+
+  **Useful shell commands**
+  ```javascript
+  show dbs                        // list databases
+  use myapp                       // switch to (or create) a database
+  db.users.insertOne({ name: "Alice", role: "admin" })
+  db.users.find().pretty()
+  db.users.drop()
+  exit
+  ```
+</Accordion>
+
+<Accordion title="Redis — Port 6379">
+  Redis is a blazing-fast in-memory key-value store that persists to disk. It is commonly used for caching, session storage, pub/sub messaging, and leaderboards.
+
+  **Start the server (default config)**
+  ```bash
+  redis-server
+  ```
+
+  **Start with a custom config file**
+  ```bash
+  redis-server /usr/local/etc/redis.conf
+  ```
+
+  Or as a background service:
+  ```bash
+  brew services start redis
+  ```
+
+  **Connect with redis-cli**
+  ```bash
+  redis-cli
+  ```
+
+  **Useful commands inside redis-cli**
+  ```
+  SET greeting "hello"
+  GET greeting
+  DEL greeting
+  KEYS *
+  FLUSHALL
+  EXIT
+  ```
+</Accordion>
+
+<Accordion title="Elasticsearch — Port 9200">
+  Elasticsearch is a distributed, RESTful search and analytics engine built on Apache Lucene. Its HTTP API makes it easy to index, query, and aggregate data from any language.
+
+  Elasticsearch requires Java. Verify you have it installed before starting:
+  ```bash
+  java -version
+  ```
+
+  **Start the server**
+  ```bash
+  elasticsearch
+  ```
+
+  Or as a background service:
+  ```bash
+  brew services start elasticsearch
+  ```
+
+  **Verify the server is running**
+  ```bash
+  curl -XGET 'http://localhost:9200/'
+  ```
+
+  **Basic REST API operations**
+  ```bash
+  # Index a document
+  curl -XPOST 'http://localhost:9200/myindex/doc/1' \
+       -H 'Content-Type: application/json' \
+       -d '{"title": "Hello Elasticsearch", "tags": ["search"]}'
+
+  # Search
+  curl -XGET 'http://localhost:9200/myindex/_search?q=title:Hello&pretty'
+
+  # Delete an index
+  curl -XDELETE 'http://localhost:9200/myindex'
+  ```
+</Accordion>
+
+## MySQL Workbench
+
+<Note>
+  MySQL Workbench is installed as a macOS application by `datastores.sh`. Open it from your Applications folder to visually design schemas, write and execute queries, manage users, and inspect server status — no terminal required. It is a free, official tool from Oracle and is the recommended GUI alternative to the `mysql` CLI for complex schema work.
+</Note>

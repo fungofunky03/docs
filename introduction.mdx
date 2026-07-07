@@ -1,0 +1,68 @@
+---
+title: "Dev Setup: macOS Environment Automation Explained"
+sidebarTitle: "Introduction"
+description: "Dev Setup is a collection of modular shell scripts and dotfiles that configure a complete macOS development environment — pick only the tools you need."
+---
+
+Setting up a new developer machine is an ad-hoc, manual, and time-consuming process. Dev Setup fixes that by giving you a curated set of shell scripts and dotfiles that automate everything from OS updates to Python virtual environments, cloud tooling, and database servers. You choose exactly which modules to run, so your machine gets precisely the tools your workflow demands — nothing more, nothing less.
+
+## Why Dev Setup exists
+
+Every developer eventually faces the blank-slate problem: a fresh Mac with nothing on it, a deadline looming, and hours of clicking through installers ahead. Dev Setup was built to solve that problem with a light-weight, understandable approach. Rather than hiding logic behind a heavyweight framework, Dev Setup uses plain Homebrew, Homebrew Cask, and shell scripts — tools you already understand — so you always know what's happening on your machine.
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Modular by design" icon="cubes">
+    Each domain lives in its own script. Run `pydata.sh` for data science, `datastores.sh` for databases, or `all` for everything — the choice is yours.
+  </Card>
+  <Card title="Homebrew-powered" icon="beer-mug-empty">
+    All packages and GUI apps are managed through Homebrew and Homebrew Cask, giving you a single, consistent package manager.
+  </Card>
+  <Card title="Dotfiles included" icon="file-code">
+    `bootstrap.sh` syncs Vim config, bash customizations, tab completion, aliases, and utility functions directly to your home directory.
+  </Card>
+  <Card title="Developer-tuned macOS defaults" icon="sliders">
+    `osx.sh` applies dozens of sensible macOS system settings optimized for developer productivity and SSD performance.
+  </Card>
+  <Card title="Data science ready" icon="chart-line">
+    `pydata.sh` creates isolated Python 2 and Python 3 virtualenvs pre-loaded with NumPy, Pandas, Scikit-Learn, Matplotlib, and IPython Notebook.
+  </Card>
+  <Card title="Cloud & big data" icon="cloud">
+    `aws.sh` installs the AWS CLI, Boto, S3cmd, and sets up Spark and Hadoop MapReduce inside a dedicated virtualenv.
+  </Card>
+</CardGroup>
+
+## The philosophy: pick what you need
+
+Dev Setup is designed as an organized reference of developer tools, not a one-size-fits-all installer. You are not meant to run every script. Browse the available modules, decide which ones match your work, and pass only those names to the `.dots` launcher. If the defaults don't suit you, fork the repo and modify the scripts — they're plain bash and easy to read.
+
+<Tip>
+  Start with `bootstrap`, `brew`, and `osx` as a solid baseline, then layer in specialist scripts like `pydata` or `datastores` only when you need them.
+</Tip>
+
+## What's included
+
+Dev Setup is organized into two layers:
+
+**Setup scripts** — each script installs and configures one domain:
+
+| Script | Purpose |
+|---|---|
+| `bootstrap.sh` | Syncs dotfiles (Vim, bash, aliases, utilities) to `~` |
+| `osxprep.sh` | Updates macOS and installs Xcode Command Line Tools |
+| `brew.sh` | Installs Homebrew formulae and GUI apps via Cask |
+| `osx.sh` | Applies developer-friendly macOS system defaults |
+| `pydata.sh` | Sets up Python virtualenvs with data science packages |
+| `aws.sh` | Installs AWS CLI, Boto, S3cmd, Spark, and MapReduce |
+| `datastores.sh` | Installs MySQL, PostgreSQL, MongoDB, Redis, Elasticsearch |
+| `web.sh` | Installs Node.js, JSHint, Less, and CoffeeScript |
+| `android.sh` | Installs Java, Android SDK, Android Studio, IntelliJ IDEA |
+
+**The `.dots` launcher** — a single entry point that accepts any combination of the above script names (or `all`) as arguments, prompts for your password once, and runs each module in sequence.
+
+## macOS compatibility
+
+<Note>
+  Dev Setup scripts were originally tested on **macOS 10.10 Yosemite** and **10.11 El Capitan**. Most Homebrew-based steps work on later versions of macOS, but review each script before running it on a newer OS and adjust any deprecated flags or formulae to match your environment.
+</Note>

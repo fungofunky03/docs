@@ -1,0 +1,133 @@
+---
+title: "bootstrap.sh: Sync Dotfiles to Your Home Directory"
+sidebarTitle: "bootstrap.sh"
+description: "bootstrap.sh copies all dotfiles from the dev-setup repository to your home directory using rsync, then reloads your Bash profile automatically."
+---
+
+`bootstrap.sh` plants the dev-setup dotfiles into your home directory so that every subsequent terminal session benefits from the custom aliases, prompt, exports, functions, Git config, Vim settings, and more. It uses `rsync` to copy only the relevant files, skips everything that should stay in the repository, and immediately sources your new `~/.bash_profile` so the changes take effect without reopening your terminal.
+
+<Warning>
+  Running `bootstrap.sh` will **overwrite existing files** in your home directory with the versions from the dev-setup repository. You will be prompted to confirm before anything is written — unless you pass the `--force` flag, in which case the sync proceeds immediately without asking.
+</Warning>
+
+## Running bootstrap.sh
+
+<Tabs>
+  <Tab title="Interactive (with confirmation)">
+    ```bash
+    source bootstrap.sh
+    ```
+
+    You'll see the prompt:
+
+    ```
+    This may overwrite existing files in your home directory. Are you sure? (y/n)
+    ```
+
+    Type `y` to proceed.
+  </Tab>
+  <Tab title="Force (skip confirmation)">
+    ```bash
+    set -- -f; source bootstrap.sh
+    ```
+
+    Or equivalently:
+
+    ```bash
+    source bootstrap.sh --force
+    ```
+
+    Use this when scripting or when you know you want to overwrite without prompting.
+  </Tab>
+  <Tab title="Via .dots">
+    ```bash
+    ./.dots bootstrap
+    ```
+
+    The `.dots` launcher runs the bootstrap sync as part of the automated setup flow.
+  </Tab>
+</Tabs>
+
+## How It Works
+
+The script uses `rsync` with a set of explicit exclusions to copy only the dotfiles — not the repository metadata, the script itself, or documentation:
+
+```bash
+function doIt() {
+    rsync --exclude ".git/" --exclude ".DS_Store" --exclude "bootstrap.sh" \
+        --exclude "README.md" --exclude "LICENSE" -avh --no-perms . ~;
+    source ~/.bash_profile;
+}
+```
+
+After the sync completes, `source ~/.bash_profile` is called automatically so your new shell configuration is active immediately.
+
+## Files Synced to `~`
+
+Every dotfile in the repository root (except the excluded ones listed below) is copied to your home directory:
+
+| File | Purpose |
+|---|---|
+| `.aliases` | Shorthand commands for common operations |
+| `.bash_profile` | Main Bash startup file — sources all other dotfiles |
+| `.bash_prompt` | Custom colored and informative shell prompt |
+| `.bashrc` | Non-login interactive shell configuration |
+| `.exports` | Environment variable definitions (`$EDITOR`, `$PATH`, etc.) |
+| `.functions` | Useful shell functions |
+| `.gitconfig` | Git user settings, colors, and aliases |
+| `.gitignore` | Global Git ignore patterns (including `.DS_Store`) |
+| `.gitattributes` | Git line-ending and merge strategy settings |
+| `.inputrc` | Readline configuration (history search, key bindings) |
+| `.vimrc` | Vim editor configuration |
+| `.gvimrc` | GUI Vim configuration |
+| `.curlrc` | Default `curl` options |
+| `.wgetrc` | Default `wget` options |
+| `.screenrc` | GNU Screen configuration |
+| `.editorconfig` | Cross-editor indentation and encoding settings |
+| `.hgignore` | Global Mercurial ignore patterns |
+| `.hushlogin` | Suppresses the "Last login" message in new terminals |
+| `.aws` | AWS configuration directory |
+| `.mrjob.conf` | MapReduce job configuration |
+| `.s3cfg` | S3cmd configuration |
+| `.gdbinit` | GDB debugger initialization |
+
+## What rsync Excludes
+
+The following files and directories are intentionally **not** copied to `~`:
+
+| Excluded | Reason |
+|---|---|
+| `.git/` | Repository metadata — stays in the dev-setup clone |
+| `.DS_Store` | macOS metadata files — not needed in `~` |
+| `bootstrap.sh` | The script itself — no reason to copy it to `~` |
+| `README.md` | Repository documentation |
+| `LICENSE` | Repository license file |
+
+## Optional: ~/.path and ~/.extra
+
+Two additional files are sourced by `.bash_profile` if they exist, but are **not** included in the repository. Create them yourself to customize your setup without modifying the tracked dotfiles:
+
+<CardGroup cols={2}>
+  <Card title="~/.path" icon="road">
+    Add custom entries to `$PATH` before any feature detection runs. Example:
+
+    ```bash
+    export PATH="/usr/local/bin:$PATH"
+    ```
+  </Card>
+  <Card title="~/.extra" icon="plus">
+    Add custom commands, credentials, or overrides. Example:
+
+    ```bash
+    # Git credentials
+    GIT_AUTHOR_NAME="Your Name"
+    git config --global user.name "$GIT_AUTHOR_NAME"
+    GIT_AUTHOR_EMAIL="you@example.com"
+    git config --global user.email "$GIT_AUTHOR_EMAIL"
+    ```
+  </Card>
+</CardGroup>
+
+<Tip>
+  Use `~/.extra` to store anything that shouldn't be committed to a public repository — API keys, personal Git credentials, or machine-specific `$PATH` additions. This keeps the dev-setup dotfiles clean and shareable.
+</Tip>

@@ -1,0 +1,199 @@
+---
+title: "Troubleshooting Common Dev Setup Issues"
+sidebarTitle: "Troubleshooting"
+description: "Solutions for common Dev Setup problems including Homebrew errors, permission issues, Xcode tool failures, script interruptions, and virtualenv conflicts."
+---
+
+When something goes wrong during a Dev Setup run, the error output in your terminal is the first place to look. Most failures fall into a handful of recognizable categories — Xcode tools, Homebrew permissions, script dependency ordering, and virtualenv configuration. Work through the relevant section below to resolve the issue and get back on track.
+
+## Common issues
+
+<AccordionGroup>
+  <Accordion title="Xcode Command Line Tools fail to install">
+    **Symptom**: `osxprep.sh` hangs, the Xcode installer dialog never appears, or you see an error like `xcode-select: error: tool 'xcodebuild' requires Xcode`.
+
+    **Solution**: Trigger the installation manually:
+
+    ```bash
+    xcode-select --install
+    ```
+
+    A dialog box will appear asking you to install the Command Line Tools. Click **Install** (not "Get Xcode") and wait for it to complete.
+
+    If the command says the tools are already installed but other tools still can't find them, reset the active developer directory:
+
+    ```bash
+    sudo xcode-select --reset
+    ```
+
+    If you have a full Xcode installation alongside the CLT, point the selector at it explicitly:
+
+    ```bash
+    sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer
+    ```
+
+    After resetting, re-run `./osxprep.sh`.
+  </Accordion>
+
+  <Accordion title="Homebrew permission errors">
+    **Symptom**: `brew install` fails with errors like `Permission denied @ dir_s_mkdir - /usr/local/Frameworks` or `EACCES: permission denied`.
+
+    **Solution**: Fix ownership of the Homebrew directories so your user account controls them:
+
+    ```bash
+    sudo chown -R $(whoami) /usr/local/
+    ```
+
+    On Apple Silicon Macs, Homebrew installs to `/opt/homebrew` instead:
+
+    ```bash
+    sudo chown -R $(whoami) /opt/homebrew/
+    ```
+
+    After fixing permissions, run Homebrew's built-in diagnostic to check for any remaining issues:
+
+    ```bash
+    brew doctor
+    ```
+
+    Address any warnings `brew doctor` reports before re-running `brew.sh`.
+  </Accordion>
+
+  <Accordion title="brew.sh fails or stops midway">
+    **Symptom**: `brew.sh` exits early with an error, or a single formula fails to build and the script stops.
+
+    **Solution**: Homebrew is idempotent — formulae that are already installed are skipped automatically. Simply re-run the script after addressing the error:
+
+    ```bash
+    brew doctor        # diagnose first
+    ./brew.sh          # then re-run
+    ```
+
+    If a specific formula consistently fails, comment it out in `brew.sh` before re-running and install it separately once the root cause is resolved:
+
+    ```bash
+    # Comment out the offending line, for example:
+    # brew install some-failing-formula
+    ```
+
+    For source-compiled formulae (`brew install vim --override-system-vi`, etc.), ensure Xcode Command Line Tools are correctly installed first, as they provide the compilers those builds need.
+  </Accordion>
+
+  <Accordion title="pydata.sh virtualenv setup fails">
+    **Symptom**: `pydata.sh` errors with something like `No module named virtualenv`, `virtualenvwrapper.sh: No such file or directory`, or Python is not found.
+
+    **Solution**: `pydata.sh` depends on Python 3 installed by Homebrew, not the system Python. Make sure `brew.sh` ran successfully first:
+
+    ```bash
+    which python3   # should output /usr/local/bin/python3
+    ```
+
+    If it points at `/usr/bin/python3` (system Python), `brew.sh` either hasn't run or the Homebrew `bin` isn't on your `PATH`. Add it:
+
+    ```bash
+    export PATH="/usr/local/bin:$PATH"
+    ```
+
+    Then upgrade the essential Python packaging tools and re-run:
+
+    ```bash
+    pip install --upgrade pip virtualenv virtualenvwrapper
+    ./pydata.sh
+    ```
+
+    If `pydata.sh` configured `~/.extra` but the changes aren't active in your current shell, source the file manually:
+
+    ```bash
+    source ~/.extra
+    ```
+  </Accordion>
+
+  <Accordion title="aws.sh says virtualenvwrapper is not found">
+    **Symptom**: `aws.sh` fails with `virtualenvwrapper.sh: No such file or directory` or `workon: command not found`.
+
+    **Solution**: `aws.sh` depends on the virtualenv setup that `pydata.sh` performs. Run `pydata.sh` first if you haven't already:
+
+    ```bash
+    ./pydata.sh
+    ```
+
+    After `pydata.sh` completes, it writes configuration lines to `~/.extra`. If your current shell session predates those changes, source the file to pick them up without opening a new window:
+
+    ```bash
+    source ~/.extra
+    ```
+
+    Then re-run `aws.sh`:
+
+    ```bash
+    ./aws.sh
+    ```
+  </Accordion>
+
+  <Accordion title="osx.sh changes don't take effect">
+    **Symptom**: You ran `./osx.sh` but macOS preferences — Dock behavior, Finder settings, screenshot format, scroll direction — look unchanged.
+
+    **Solution**: Many macOS defaults require the affected application or the system itself to restart before they apply. Start with the lightest intervention and work up:
+
+    1. Quit and reopen the affected application (e.g., Finder, Dock, Safari).
+    2. Log out and log back in (**Apple menu → Log Out**).
+    3. Restart macOS fully for system-level changes.
+
+    ```bash
+    # Restart the Dock and Finder immediately from the terminal
+    killall Dock
+    killall Finder
+    ```
+
+    <Note>
+      Settings in the SSD optimization section of `osx.sh` (sleep image, sudden motion sensor) require a full restart and only apply if you're actually running on an SSD. Read through the commented `osx.sh` source and disable any settings that don't match your hardware before re-running.
+    </Note>
+  </Accordion>
+
+  <Accordion title="bootstrap.sh overwrote my existing dotfiles">
+    **Symptom**: After running `bootstrap.sh` or `.dots`, your custom `.bashrc`, `.bash_profile`, `.gitconfig`, or other dotfiles were replaced with the Dev Setup versions.
+
+    **Solution**: `bootstrap.sh` intentionally syncs the repo dotfiles to your home directory, overwriting files with the same names.
+
+    To recover your previous files:
+    - **Time Machine**: Restore from a recent backup via **System Preferences → Time Machine → Enter Time Machine**, navigate to `~`, and restore the affected files.
+    - **Git history**: If you had your dotfiles in a separate Git repo, check out the previous versions from there.
+
+    To prevent this from happening again, put all your personal customizations in `~/.extra` instead of modifying the tracked dotfiles directly. The `~/.extra` file is never touched by `bootstrap.sh`:
+
+    ```bash
+    # Move personal config into ~/.extra
+    echo 'alias myalias="echo hello"' >> ~/.extra
+    echo 'export MY_VAR="value"' >> ~/.extra
+    ```
+  </Accordion>
+
+  <Accordion title="Script asks for my password repeatedly">
+    **Symptom**: You are prompted for your macOS user password multiple times during a single script run, or prompted again when you re-run a script shortly after the first run.
+
+    **Solution**: This is expected behavior. Dev Setup scripts use `sudo` for system-level operations like writing to `/etc/shells` and modifying `/usr/local/`. macOS sudo sessions time out after a few minutes by default.
+
+    Both `.dots` and `brew.sh` include a keep-alive loop that refreshes the sudo timestamp every 60 seconds for the duration of the script:
+
+    ```bash
+    # Ask for the administrator password upfront
+    sudo -v
+
+    # Keep-alive: update existing sudo timestamp until the script finishes
+    while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
+    ```
+
+    You should only need to enter your password once at the start. If you are prompted multiple times, your machine's sudo timeout may be shorter than 60 seconds or the keep-alive background process was killed. Simply re-enter your password when asked — the script will continue normally.
+  </Accordion>
+</AccordionGroup>
+
+## Getting help
+
+If your issue isn't listed above, check the project's GitHub repository for open issues or to file a new one:
+
+**[github.com/donnemartin/dev-setup](https://github.com/donnemartin/dev-setup)**
+
+When filing an issue, include:
+- The full terminal output from the failing command
+- Your macOS version (`sw_vers -productVersion`)
+- The output of `brew doctor` if the issue involves Homebrew

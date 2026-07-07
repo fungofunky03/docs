@@ -1,0 +1,88 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "Dev Setup",
+  "projectDescription": "A collection of automated setup scripts and dotfiles for configuring a macOS development environment with tools for Python data analysis, cloud computing, web development, and more.",
+  "theme": "aspen",
+  "primaryColor": "#242b2c",
+  "lightColor": "#6a6a6d",
+  "darkColor": "#ebeaea",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Setup Scripts",
+            "pages": [
+              "scripts/overview",
+              "scripts/osxprep",
+              "scripts/brew",
+              "scripts/osx-defaults",
+              "scripts/bootstrap"
+            ]
+          },
+          {
+            "group": "Developer Environments",
+            "pages": [
+              "environments/python-data",
+              "environments/aws-spark",
+              "environments/datastores",
+              "environments/web",
+              "environments/android"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/dotfiles",
+              "configuration/vim",
+              "configuration/git",
+              "configuration/bash"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/customizing",
+              "guides/sublime-text",
+              "guides/iterm2",
+              "guides/troubleshooting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "One-command full macOS dev environment setup via .dots launcher",
+    "Modular scripts — install only the tools you need",
+    "Automated Homebrew installation of 50+ developer tools and apps",
+    "Python 2 & 3 virtualenv setup with data science libraries (NumPy, Pandas, Scikit-learn)",
+    "AWS, Spark, and Hadoop MapReduce environment configuration",
+    "Common data store installation (MySQL, PostgreSQL, MongoDB, Redis, Elasticsearch)",
+    "Node.js and JavaScript toolchain setup",
+    "Android SDK and IntelliJ IDEA development environment",
+    "Curated dotfiles for Vim, Git, Bash, iTerm2, and Sublime Text",
+    "macOS developer-friendly system defaults via osx.sh"
+  ],
+  "publicApiSurface": [
+    ".dots (master launcher script)",
+    "bootstrap.sh (sync dotfiles to home directory)",
+    "osxprep.sh (update macOS + install Xcode CLI tools)",
+    "brew.sh (install Homebrew formulae and cask apps)",
+    "osx.sh (apply macOS developer defaults)",
+    "pydata.sh (set up Python data science environments)",
+    "aws.sh (configure AWS CLI and Spark/Hadoop tools)",
+    "datastores.sh (install MySQL, PostgreSQL, MongoDB, Redis, Elasticsearch)",
+    "web.sh (install Node.js and npm global packages)",
+    "android.sh (install Java, Android SDK, Android Studio)"
+  ]
+}

@@ -1,0 +1,125 @@
+---
+title: "iTerm2 Setup with Solarized Dark Theme"
+sidebarTitle: "iTerm2"
+description: "Dev Setup installs iTerm2 and includes a Solarized Dark color scheme and terminal profile for a polished, readable terminal experience on macOS."
+---
+
+iTerm2 is a feature-rich replacement for macOS's built-in Terminal that Dev Setup installs and configures by default. Paired with the included Solarized Dark color scheme and the custom bash prompt from `bootstrap.sh`, your terminal becomes a genuinely pleasant place to work — not just a functional one.
+
+## Installation via brew.sh
+
+Running `./brew.sh` installs iTerm2 using Homebrew Cask:
+
+```bash
+brew cask install --appdir="~/Applications" iterm2
+```
+
+After the script finishes, launch iTerm2 from your Applications folder or via Spotlight (**⌘ Space → iTerm**). You can pin it to your Dock by right-clicking the Dock icon and selecting **Options → Keep in Dock**.
+
+## Included color and terminal profile files
+
+Dev Setup ships two theme files inside the `init/` directory:
+
+| File | Purpose |
+|---|---|
+| `init/Solarized Dark.itermcolors` | iTerm2 color preset — import this into iTerm2 Profiles |
+| `init/Solarized Dark xterm-256color.terminal` | macOS Terminal profile for users who prefer the stock terminal |
+
+The [Solarized](http://ethanschoonover.com/solarized) color scheme is scientifically designed for readability, with carefully balanced contrast ratios that reduce eye strain during long coding sessions.
+
+## Importing the Solarized Dark color scheme
+
+<Steps>
+  <Step title="Open iTerm2 Preferences">
+    Launch iTerm2, then open Preferences with **⌘ ,** (or **iTerm2 → Preferences** from the menu bar).
+  </Step>
+
+  <Step title="Navigate to Profiles → Colors">
+    Click the **Profiles** tab at the top, then select the **Colors** sub-tab.
+  </Step>
+
+  <Step title="Open the Color Presets importer">
+    Click the **Color Presets...** dropdown in the bottom-right corner of the Colors panel, then select **Import...**.
+  </Step>
+
+  <Step title="Select the Solarized Dark file">
+    In the file picker, navigate to the `init/` directory inside your cloned `dev-setup` repo and select **Solarized Dark.itermcolors**. Click **Open**.
+  </Step>
+
+  <Step title="Activate the preset">
+    Click **Color Presets...** again. You should now see **Solarized Dark** listed. Select it to apply the scheme to the current profile.
+
+    Close Preferences — changes are saved automatically. Open a new terminal window to see the colors take effect.
+  </Step>
+</Steps>
+
+## Setting up the .terminal profile (macOS Terminal alternative)
+
+If you prefer to use the stock macOS Terminal app instead of iTerm2, Dev Setup also includes `init/Solarized Dark xterm-256color.terminal`:
+
+1. Open **Terminal → Preferences → Profiles**
+2. Click the gear icon at the bottom of the profiles list and select **Import...**
+3. Navigate to `init/` and select **Solarized Dark xterm-256color.terminal**
+4. Click the **Default** button to make it the active profile for new windows
+
+## Recommended iTerm2 preferences
+
+Once iTerm2 is installed and the color scheme is active, apply these quality-of-life settings:
+
+<Tabs>
+  <Tab title="Window size">
+    Go to **Preferences → Profiles → Window** and set:
+    - **Columns**: `125`
+    - **Rows**: `35`
+
+    This gives you a comfortable working area without constant horizontal scrolling.
+  </Tab>
+  <Tab title="Working directory">
+    Go to **Preferences → Profiles → General** and under **Working Directory**, select **Reuse previous session's directory**.
+
+    New tabs and splits will open in the same directory as your last active session instead of always defaulting to `~`.
+  </Tab>
+  <Tab title="Scrollback buffer">
+    Go to **Preferences → Profiles → Terminal** and check **Unlimited scrollback**.
+
+    This ensures that long build or test output is never truncated — you can always scroll back to find the full error.
+  </Tab>
+  <Tab title="Option key as Meta">
+    Go to **Preferences → Profiles → Keys** and set **Left Option Key** to **Esc+**.
+
+    This lets you jump forward and backward word-by-word with **⌥ →** and **⌥ ←**, which dramatically speeds up command-line editing.
+  </Tab>
+</Tabs>
+
+## Font recommendations
+
+For the best experience with the bash prompt added by `bootstrap.sh`, use a Powerline-compatible font. The prompt displays git branch names and status icons that use special Unicode glyphs only present in patched fonts.
+
+<CardGroup cols={2}>
+  <Card title="Meslo LG S for Powerline" icon="font">
+    The most widely used Powerline font. Download from the [powerline/fonts](https://github.com/powerline/fonts) repository on GitHub and set it in **Preferences → Profiles → Text → Font**.
+  </Card>
+  <Card title="Fira Code" icon="font">
+    A modern monospace font with programming ligatures (e.g. `!=` renders as `≠`). The [Nerd Fonts](https://www.nerdfonts.com/) variant includes Powerline glyphs.
+  </Card>
+</CardGroup>
+
+To apply your chosen font in iTerm2:
+
+1. Go to **Preferences → Profiles → Text**
+2. Click the font name under **Font**
+3. Search for your font name and set the size (13–14 pt works well on Retina displays)
+
+## The .bash_prompt customization
+
+<Tip>
+  The `bootstrap.sh` script installs a custom `.bash_prompt` file to your home directory. This prompt shows your current directory, the active Git branch, and status indicators (dirty working tree, staged changes) directly in your prompt string. With Solarized Dark colors and a Powerline font, the git status becomes immediately scannable at a glance — no need to run `git status` just to see where you are.
+</Tip>
+
+The prompt automatically updates to reflect:
+- The **current working directory**
+- The **active git branch** name (when inside a repo)
+- A **dirty indicator** when there are uncommitted changes
+- A **different color** when the last command exited with a non-zero status
+
+After running `bootstrap.sh`, open a new terminal window (or run `source ~/.bash_profile`) for the prompt to activate.

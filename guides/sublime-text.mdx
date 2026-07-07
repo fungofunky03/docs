@@ -1,0 +1,193 @@
+---
+title: "Sublime Text Setup and Configuration Guide"
+sidebarTitle: "Sublime Text"
+description: "Dev Setup installs Sublime Text via Homebrew Cask and provides curated preferences covering fonts, indentation, file handling, and theme settings."
+---
+
+Sublime Text is one of the most popular editors for developers on macOS, offering a fast, lightweight experience with a rich ecosystem of packages. Dev Setup installs it automatically via Homebrew Cask and ships a polished `Preferences.sublime-settings` file you can drop straight into your User preferences folder to get a consistent, productive environment from day one.
+
+## Installation via brew.sh
+
+Running `./brew.sh` installs Sublime Text using Homebrew Cask:
+
+```bash
+brew cask install --appdir="/Applications" sublime-text
+```
+
+If you already ran `brew.sh` as part of your initial setup, Sublime Text is already installed. You can verify this by checking for it in `/Applications` or running:
+
+```bash
+ls /Applications/Sublime\ Text.app
+```
+
+## Setting up the subl command-line tool
+
+The `subl` command lets you open files and directories in Sublime Text directly from your terminal. After installing Sublime Text, add the `subl` symlink to a directory on your `$PATH`:
+
+```bash
+ln -s "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" /usr/local/bin/subl
+```
+
+Now you can open any file or folder instantly:
+
+```bash
+# Open a single file
+subl ~/.extra
+
+# Open the current directory as a project
+subl .
+
+# Open multiple files
+subl file1.py file2.py
+```
+
+<Tip>
+  Add `export EDITOR="subl -w"` to your `~/.extra` file to make Sublime Text your default editor for Git commit messages and other tools that respect the `$EDITOR` variable.
+</Tip>
+
+## Applying the provided preferences
+
+Dev Setup includes a ready-to-use `init/Preferences.sublime-settings` file. Copy it to your Sublime Text User packages directory to apply it:
+
+```bash
+cp init/Preferences.sublime-settings \
+  ~/Library/Application\ Support/Sublime\ Text\ 3/Packages/User/Preferences.sublime-settings
+```
+
+Or open the destination directly from within Sublime Text via **Sublime Text → Preferences → Settings** and paste in the contents.
+
+## The settings file
+
+<CodeGroup>
+```json Preferences.sublime-settings
+{
+    "color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
+    "default_encoding": "UTF-8",
+    "default_line_ending": "unix",
+    "detect_indentation": false,
+    "draw_white_space": "all",
+    "ensure_newline_at_eof_on_save": false,
+    "file_exclude_patterns":
+    [
+        ".DS_Store",
+        "Desktop.ini",
+        "*.pyc",
+        "._*",
+        "Thumbs.db",
+        ".Spotlight-V100",
+        ".Trashes"
+    ],
+    "folder_exclude_patterns":
+    [
+        ".git",
+        "node_modules"
+    ],
+    "font_face": "Monaco",
+    "font_size": 10,
+    "highlight_modified_tabs": true,
+    "hot_exit": true,
+    "line_padding_bottom": 5,
+    "match_brackets": true,
+    "match_brackets_angle": true,
+    "remember_open_files": true,
+    "rulers":
+    [
+        80
+    ],
+    "show_encoding": true,
+    "show_line_endings": true,
+    "tab_size": 4,
+    "theme": "Soda Dark 3.sublime-theme",
+    "translate_tabs_to_spaces": true,
+    "trim_trailing_white_space_on_save": true,
+    "word_wrap": true,
+    "always_show_minimap_viewport": true
+}
+```
+</CodeGroup>
+
+## Setting explanations
+
+<Accordion title="Font settings">
+  | Setting | Value | What it does |
+  |---|---|---|
+  | `font_face` | `"Monaco"` | Uses Monaco, the classic macOS monospace font. Swap this for any font installed on your system, such as `"Menlo"`, `"Fira Code"`, or a Powerline-patched variant like `"Meslo LG S for Powerline"`. |
+  | `font_size` | `10` | Sets the editor font size in points. Increase to `12` or `14` on a Retina display. |
+  | `line_padding_bottom` | `5` | Adds 5 px of padding below each line, giving the text more breathing room and reducing eye strain during long sessions. |
+</Accordion>
+
+<Accordion title="Indentation settings">
+  | Setting | Value | What it does |
+  |---|---|---|
+  | `tab_size` | `4` | Treats a tab as 4 spaces wide — the Python PEP 8 standard. Change to `2` for JavaScript or Ruby projects. |
+  | `translate_tabs_to_spaces` | `true` | Inserts actual space characters when you press Tab instead of a tab character. This eliminates mixed-indentation bugs across editors. |
+  | `detect_indentation` | `false` | Prevents Sublime Text from overriding `tab_size` and `translate_tabs_to_spaces` based on the indentation already present in a file. Keeps your settings consistent. |
+</Accordion>
+
+<Accordion title="File handling settings">
+  | Setting | Value | What it does |
+  |---|---|---|
+  | `trim_trailing_white_space_on_save` | `true` | Strips trailing whitespace from every line automatically when you save. Keeps diffs clean. |
+  | `ensure_newline_at_eof_on_save` | `false` | Does not automatically append a newline at the end of files on save. Enable this (`true`) if your project's linter or CI requires it. |
+  | `default_line_ending` | `"unix"` | Forces Unix-style `\n` line endings on all new files, avoiding Windows `\r\n` endings that break shell scripts. |
+  | `default_encoding` | `"UTF-8"` | Saves all new files as UTF-8. |
+  | `file_exclude_patterns` | `.DS_Store`, `*.pyc`, etc. | Hides noisy system and build files from the sidebar file tree. |
+  | `folder_exclude_patterns` | `.git`, `node_modules` | Prevents the `.git` folder and `node_modules` from appearing in the sidebar, keeping the tree readable. |
+</Accordion>
+
+<Accordion title="UI and editor settings">
+  | Setting | Value | What it does |
+  |---|---|---|
+  | `theme` | `"Soda Dark 3.sublime-theme"` | Applies the Soda Dark UI theme (requires the [Theme - Soda](https://github.com/buymeasoda/soda-theme) package). |
+  | `color_scheme` | `"Monokai.tmTheme"` | The built-in Monokai syntax-highlighting scheme. |
+  | `highlight_modified_tabs` | `true` | Shows a visual indicator on tabs with unsaved changes. |
+  | `hot_exit` | `true` | Preserves all open files and unsaved changes when you close Sublime Text, restoring them on next launch. |
+  | `remember_open_files` | `true` | Re-opens the same files and project you had open when Sublime Text last closed. |
+  | `rulers` | `[80]` | Draws a subtle vertical guide line at column 80 — the conventional line-length limit for Python and many other languages. |
+  | `draw_white_space` | `"all"` | Renders whitespace characters (spaces, tabs) as visible dots, making indentation issues immediately obvious. |
+  | `match_brackets` | `true` | Highlights the matching bracket, brace, or parenthesis when your cursor is next to one. |
+  | `match_brackets_angle` | `true` | Extends bracket matching to angle brackets `< >` (useful for HTML and generic types). |
+  | `show_encoding` | `true` | Displays the current file encoding in the status bar. |
+  | `show_line_endings` | `true` | Displays the current line-ending style (`Unix`, `Windows`, `CR`) in the status bar. |
+  | `word_wrap` | `true` | Soft-wraps long lines at the window edge so you never have to scroll horizontally. |
+  | `always_show_minimap_viewport` | `true` | Keeps the visible-area highlight in the minimap permanently visible instead of only on hover. |
+</Accordion>
+
+## Theme setup: Soda Dark
+
+The preferences file sets `"theme": "Soda Dark 3.sublime-theme"`. Install it via Package Control:
+
+1. Open the Command Palette: **⌘ Shift P**
+2. Type `Install Package` and press **Enter**
+3. Search for `Theme - Soda` and press **Enter** to install
+
+Once installed, the theme activates automatically the next time Sublime Text loads its preferences.
+
+<Note>
+  Dev Setup also includes `init/Solarized Dark.itermcolors` for iTerm2 and a Solarized terminal profile. If you prefer Solarized syntax highlighting inside Sublime Text as well, search Package Control for `Solarized Color Scheme` and update `color_scheme` in your preferences to point to the installed `.tmTheme` file.
+</Note>
+
+## Recommended packages
+
+Install these via Package Control (**⌘ Shift P → Install Package**):
+
+<CardGroup cols={2}>
+  <Card title="Theme - Soda" icon="palette">
+    The dark UI theme referenced in the provided preferences file. Required for the `Soda Dark 3` theme setting to work.
+  </Card>
+  <Card title="SublimeLinter" icon="bug">
+    Framework for running linters (pyflakes, jshint, etc.) inline as you type, with gutter indicators for errors and warnings.
+  </Card>
+  <Card title="GitGutter" icon="code-branch">
+    Shows added, modified, and removed lines in the gutter relative to your Git index — instant visual diff without leaving the editor.
+  </Card>
+  <Card title="Emmet" icon="bolt">
+    Turbo-charged HTML and CSS abbreviation expansion. Type `ul>li*5` and expand it to a full unordered list in one keystroke.
+  </Card>
+  <Card title="BracketHighlighter" icon="brackets-curly">
+    More powerful bracket matching than the built-in option — highlights the full scope between brackets in the gutter and inline.
+  </Card>
+  <Card title="AdvancedNewFile" icon="file-plus">
+    Create new files and directories from the Command Palette without leaving the keyboard, including creating intermediate directories automatically.
+  </Card>
+</CardGroup>

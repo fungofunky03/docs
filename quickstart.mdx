@@ -1,47 +1,103 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with Dev Setup in Minutes"
+sidebarTitle: "Quickstart"
+description: "Clone the dev-setup repository and run the automated scripts to configure your macOS development environment from scratch in a few simple steps."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+Dev Setup gets a new Mac from zero to fully configured in one short session. The process breaks into two phases: preparing macOS (updates + Xcode tools), then running whichever setup modules you need. The steps below walk you through the fastest path to a working environment.
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Check prerequisites">
+    Before you begin, confirm you have:
 
-    ```bash
-    npm install your-package
-    ```
+    - **macOS 10.9 Mavericks or later** (scripts were tested on Yosemite and El Capitan)
+    - **Git** — available once Xcode Command Line Tools are installed (step 3 handles this automatically if needed)
+    - **Admin privileges** — the scripts use `sudo` at several points; you must be an administrator on the machine
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+  <Step title="Clone the repository">
+    Clone Dev Setup to your local machine and move into the project directory.
 
     ```bash
-    your-cli init
+    git clone https://github.com/donnemartin/dev-setup.git && cd dev-setup
     ```
+
+    <Tip>
+      No Git yet? You can also bootstrap without it by downloading the `.dots` script directly and passing your chosen arguments:
+
+      ```bash
+      curl -O https://raw.githubusercontent.com/donnemartin/dev-setup/master/.dots && ./.dots [args]
+      ```
+    </Tip>
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+  <Step title="Run osxprep.sh to update macOS and install Xcode tools">
+    Run the preparation script first. It installs all pending macOS software updates and then installs the **Xcode Command Line Tools** — a required dependency for Homebrew and many other tools.
 
     ```bash
-    your-cli start
+    ./osxprep.sh
     ```
+
+    A dialog box will appear asking you to confirm the Xcode Command Line Tools installation. Click **Install** and wait for it to complete, then follow any remaining terminal prompts.
+
+    <Note>
+      If macOS updates require a restart, reboot your machine and run `./osxprep.sh` again. It will pick up where it left off and proceed to install the Xcode tools.
+    </Note>
+  </Step>
+  <Step title="Run the .dots launcher">
+    With your machine up to date and Xcode tools installed, run `.dots` with the modules you want. Pass `all` to install every available script, or name individual modules to install only what you need.
+
+    **Install everything:**
+
+    ```bash
+    ./.dots all
+    ```
+
+    **Install core tools only** (`bootstrap`, `brew`, `osx`):
+
+    ```bash
+    ./.dots bootstrap brew osx
+    ```
+
+    **Install core tools plus the Python data stack:**
+
+    ```bash
+    ./.dots bootstrap brew osx pydata
+    ```
+
+    **Install core tools plus data stores and AWS:**
+
+    ```bash
+    ./.dots bootstrap osxprep brew osx pydata aws datastores
+    ```
+
+    <Note>
+      `.dots` will prompt you before it starts: `"This script may overwrite existing files in your home directory. Are you sure? (y/n)"`. Type `y` to proceed. The script then requests your administrator password and keeps it alive for the duration of the run — you won't need to re-enter it repeatedly.
+    </Note>
+
+    When the script finishes, you'll see:
+
+    ```
+    ------------------------------
+    Completed running .dots, restart your computer to ensure all updates take effect
+    ------------------------------
+    ```
+
+    **Restart your Mac** to apply all changes.
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## Available modules
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+Pass any combination of these names to `.dots`:
+
+| Argument | Script | What it does |
+|---|---|---|
+| `bootstrap` | `bootstrap.sh` | Syncs dotfiles to your home directory `~` |
+| `osxprep` | `osxprep.sh` | Updates macOS and installs Xcode Command Line Tools |
+| `brew` | `brew.sh` | Installs Homebrew, formulae, and GUI apps |
+| `osx` | `osx.sh` | Applies developer macOS defaults |
+| `pydata` | `pydata.sh` | Sets up Python + data science packages |
+| `aws` | `aws.sh` | Installs AWS CLI, Boto, Spark, MapReduce |
+| `datastores` | `datastores.sh` | Installs MySQL, PostgreSQL, MongoDB, Redis, Elasticsearch |
+| `web` | `web.sh` | Installs Node.js, JSHint, Less |
+| `android` | `android.sh` | Installs Java, Android SDK, Android Studio |
+| `all` | *(all of the above)* | Runs every script in sequence |

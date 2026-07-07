@@ -1,0 +1,85 @@
+---
+title: "osxprep.sh: Prepare macOS Before Setup"
+sidebarTitle: "osxprep.sh"
+description: "osxprep.sh updates your macOS system and installs Xcode Command Line Tools — the required first step before running any other Dev Setup scripts."
+---
+
+Before any developer tool — including Homebrew — can function correctly on macOS, two prerequisites must be in place: a fully updated operating system and the Xcode Command Line Tools. `osxprep.sh` handles both automatically. Run it first on any new Mac, and run it again any time you suspect your system or compiler toolchain is out of date.
+
+## What osxprep.sh Does
+
+The script performs exactly two operations, in order:
+
+1. **Updates macOS** — calls `softwareupdate -ia` to install every available update (OS, firmware, and bundled apps) in verbose mode.
+2. **Installs Xcode Command Line Tools** — calls `xcode-select --install` to install the compilers and developer utilities (including `gcc`, `make`, `git`, and `clang`) that Homebrew and many other tools depend on.
+
+```bash
+# Ask for the administrator password upfront
+sudo -v
+
+# Step 1: Update the OS
+sudo softwareupdate -ia --verbose
+
+# Step 2: Install Xcode Command Line Tools
+xcode-select --install
+```
+
+<Note>
+  The script keeps your `sudo` session alive in the background so you aren't prompted for your password again mid-run.
+</Note>
+
+## Running osxprep.sh
+
+<Steps>
+  <Step title="Clone the repository">
+    If you haven't already, clone the dev-setup repo and navigate into it:
+
+    ```bash
+    git clone https://github.com/donnemartin/dev-setup.git && cd dev-setup
+    ```
+  </Step>
+  <Step title="Run the script">
+    Execute `osxprep.sh` directly:
+
+    ```bash
+    ./osxprep.sh
+    ```
+
+    You will be prompted for your administrator password immediately.
+  </Step>
+  <Step title="Handle the Xcode dialog">
+    When the Xcode Command Line Tools installer launches, a dialog box will appear. Select **Install** (not the full Xcode) to install just the command line tools, then wait for the installation to complete.
+  </Step>
+  <Step title="Restart if required">
+    If any macOS update requires a system restart, reboot your Mac and then run `./osxprep.sh` again. The script is safe to run multiple times — `softwareupdate` will report nothing to install and `xcode-select` will confirm the tools are already present.
+  </Step>
+</Steps>
+
+## What Gets Installed and Updated
+
+| Component | How |
+|---|---|
+| macOS system updates | `sudo softwareupdate -ia --verbose` |
+| App Store app updates | Included in `softwareupdate -ia` |
+| Firmware updates | Included in `softwareupdate -ia` |
+| Xcode Command Line Tools | `xcode-select --install` |
+| `gcc` / `clang` compilers | Bundled with Xcode CLT |
+| `make`, `git` (Apple version) | Bundled with Xcode CLT |
+
+<Warning>
+  If macOS updates require a restart, the Xcode Command Line Tools installation step will not run until you reboot and re-run the script. Don't skip this — tools like Homebrew will fail to install without the compiler toolchain.
+</Warning>
+
+## Running via .dots
+
+You can run `osxprep.sh` as part of the `.dots` launcher instead of invoking it directly:
+
+```bash
+./.dots osxprep
+```
+
+Or include it in a larger run alongside other scripts:
+
+```bash
+./.dots bootstrap osxprep brew osx
+```

@@ -1,0 +1,164 @@
+---
+title: "Node.js and JavaScript Toolchain Setup on macOS"
+sidebarTitle: "Web Dev"
+description: "web.sh installs Node.js via Homebrew and global npm packages including CoffeeScript, Grunt CLI, JSHint, and LESS for JavaScript web development."
+---
+
+`web.sh` installs Node.js and npm via Homebrew, then adds four essential global npm packages — CoffeeScript, Grunt CLI, JSHint, and LESS — so you can compile, lint, and automate JavaScript projects immediately. The entire setup runs in a single command and requires no manual configuration.
+
+## Run the Script
+
+<CodeGroup>
+```bash Via .dots
+./.dots web
+```
+
+```bash Directly
+./web.sh
+```
+</CodeGroup>
+
+## What Gets Installed
+
+The script runs the following commands in order:
+
+```bash
+brew update
+brew install node          # installs Node.js and npm together
+
+npm install -g coffee-script
+npm install -g grunt-cli
+npm install -g jshint
+npm install -g less
+```
+
+<CardGroup cols={2}>
+  <Card title="Node.js + npm" icon="node">
+    The JavaScript runtime and its package manager. Homebrew installs both together and keeps them on your `PATH`.
+  </Card>
+  <Card title="CoffeeScript" icon="mug-hot">
+    A language that compiles to clean, readable JavaScript. Write less boilerplate and let the compiler handle the details.
+  </Card>
+  <Card title="Grunt CLI" icon="terminal">
+    The Grunt task runner command-line interface. Define build, test, and deploy tasks in a `Gruntfile.js` and run them with a single command.
+  </Card>
+  <Card title="JSHint" icon="magnifying-glass">
+    A static analysis tool that spots errors and enforces code style in JavaScript files before you run them.
+  </Card>
+  <Card title="LESS" icon="palette">
+    A CSS preprocessor that adds variables, nesting, and mixins to plain CSS. Used by Bootstrap and many other popular frameworks.
+  </Card>
+</CardGroup>
+
+## Verify the Installation
+
+After the script completes (or after opening a fresh terminal), confirm everything installed correctly:
+
+```bash
+node --version      # e.g. v20.11.0
+npm --version       # e.g. 10.2.4
+coffee --version    # e.g. CoffeeScript version 2.7.0
+grunt --version     # e.g. grunt-cli v1.4.3
+jshint --version    # e.g. jshint v2.13.6
+lessc --version     # e.g. lessc 4.2.0 (Less Compiler) [JavaScript]
+```
+
+## Linting JavaScript with JSHint
+
+Run JSHint against any JavaScript file to catch syntax errors, undeclared variables, and style violations:
+
+```bash
+jshint yourfile.js
+```
+
+To lint an entire directory recursively:
+
+```bash
+jshint src/
+```
+
+Create a `.jshintrc` file in your project root to configure rules per project:
+
+```json
+{
+  "esversion": 6,
+  "node": true,
+  "undef": true,
+  "unused": true,
+  "strict": true
+}
+```
+
+## Compiling LESS to CSS
+
+Compile a single LESS file to CSS:
+
+```bash
+lessc styles.less styles.css
+```
+
+Compile with source maps for easier debugging in browser DevTools:
+
+```bash
+lessc --source-map styles.less styles.css
+```
+
+Organize your project using separate input and output directories:
+
+```bash
+lessc less/template.less css/template.css
+```
+
+## Running Grunt Tasks
+
+After installing Grunt CLI globally, add `grunt` as a local dev dependency in your project and create a `Gruntfile.js`:
+
+```bash
+cd my-project
+npm install grunt --save-dev
+```
+
+Example `Gruntfile.js` that runs JSHint then concatenates files:
+
+```javascript
+module.exports = function(grunt) {
+  grunt.initConfig({
+    jshint: {
+      files: ['src/**/*.js'],
+      options: { esversion: 6 }
+    },
+    concat: {
+      dist: {
+        src: ['src/**/*.js'],
+        dest: 'dist/bundle.js'
+      }
+    }
+  });
+
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-concat');
+
+  grunt.registerTask('default', ['jshint', 'concat']);
+};
+```
+
+Run the default task:
+
+```bash
+grunt
+```
+
+## Installing Additional npm Packages
+
+<Tip>
+  To add more global tools to your JavaScript environment, use the `-g` flag with `npm install`:
+
+  ```bash
+  npm install -g typescript       # TypeScript compiler
+  npm install -g eslint           # Modern JS/TS linter
+  npm install -g http-server      # Zero-config static file server
+  npm install -g nodemon          # Auto-restart Node apps on file changes
+  ```
+
+  List every globally installed package at any time with `npm list -g --depth=0`.
+</Tip>

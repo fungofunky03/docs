@@ -1,0 +1,158 @@
+---
+title: "Android Development Environment Setup on macOS"
+sidebarTitle: "Android"
+description: "android.sh installs Java, IntelliJ IDEA Community Edition, Android Studio, and the Android SDK via Homebrew for full Android development on macOS."
+---
+
+`android.sh` provisions a complete Android development environment on your Mac using Homebrew Cask. It installs the Java JDK, IntelliJ IDEA Community Edition, Android Studio, and the Android SDK command-line tools in a single automated run — no manual downloads or installer wizards required.
+
+## Run the Script
+
+<CodeGroup>
+```bash Via .dots
+./.dots android
+```
+
+```bash Directly
+./android.sh
+```
+</CodeGroup>
+
+## What Gets Installed
+
+The script runs these four Homebrew commands:
+
+```bash
+brew cask install --appdir="~/Applications" java
+brew cask install --appdir="~/Applications" intellij-idea-ce
+brew cask install --appdir="~/Applications" android-studio
+brew install android-sdk
+```
+
+<CardGroup cols={2}>
+  <Card title="Java JDK" icon="java">
+    The Java Development Kit required by both the Android build toolchain and the IDE. Installed to `~/Applications` via Homebrew Cask.
+  </Card>
+  <Card title="IntelliJ IDEA CE" icon="code">
+    JetBrains' free Community Edition IDE — excellent for general Java, Kotlin, and Gradle projects outside the Android ecosystem.
+  </Card>
+  <Card title="Android Studio" icon="mobile">
+    Google's official Android IDE, built on IntelliJ. Use this for all Android app development, layout editing, and emulator management.
+  </Card>
+  <Card title="Android SDK" icon="wrench">
+    The command-line SDK tools (`adb`, `sdkmanager`, `emulator`, etc.) installed via Homebrew to `/usr/local/opt/android-sdk`.
+  </Card>
+</CardGroup>
+
+<Note>
+  IntelliJ IDEA **Community Edition** (not Ultimate) is installed. Community Edition is free and open-source and covers Android, Java, Kotlin, and Groovy development. If you need web framework support (Spring, Java EE, etc.) you will need to purchase IntelliJ IDEA Ultimate separately.
+</Note>
+
+## Post-Installation Setup
+
+<Steps>
+  <Step title="Set the ANDROID_HOME environment variable">
+    Export `ANDROID_HOME` so that the Android build system and `adb` can find the SDK. Add this line to your `~/.bash_profile`, `~/.zshrc`, or `~/.extra`:
+
+    ```bash
+    export ANDROID_HOME=/usr/local/opt/android-sdk
+    ```
+  </Step>
+
+  <Step title="Add SDK tools to your PATH">
+    Append the SDK platform-tools and tools directories to `PATH` so binaries like `adb` and `emulator` are available in every terminal session:
+
+    ```bash
+    export PATH=$PATH:$ANDROID_HOME/platform-tools
+    export PATH=$PATH:$ANDROID_HOME/tools
+    export PATH=$PATH:$ANDROID_HOME/tools/bin
+    ```
+  </Step>
+
+  <Step title="Reload your shell configuration">
+    Apply the changes to your current session without restarting the terminal:
+
+    ```bash
+    source ~/.bash_profile   # or source ~/.zshrc
+    ```
+
+    Verify the SDK is discoverable:
+    ```bash
+    echo $ANDROID_HOME
+    adb version
+    ```
+  </Step>
+
+  <Step title="Install SDK platforms and build tools">
+    Open Android Studio and complete the **Setup Wizard**, which downloads the latest Android platform, build tools, and a system image for the emulator. Alternatively, use `sdkmanager` from the command line:
+
+    ```bash
+    # List available packages
+    sdkmanager --list
+
+    # Install a specific platform and build tools
+    sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
+    # Install the emulator and a system image
+    sdkmanager "emulator" "system-images;android-34;google_apis;x86_64"
+    ```
+  </Step>
+
+  <Step title="Accept SDK licenses">
+    Many SDK packages require you to accept their licenses before use. Accept all pending licenses in one command:
+
+    ```bash
+    sdkmanager --licenses
+    ```
+  </Step>
+</Steps>
+
+## IntelliJ IDEA vs Android Studio
+
+<Tabs>
+  <Tab title="Android Studio">
+    Use Android Studio for all Android app development. It includes:
+
+    - The Android-specific Layout Editor (drag-and-drop UI builder)
+    - AVD Manager for creating and running Android Virtual Devices (emulators)
+    - Logcat and Android-specific profiling tools
+    - Integrated Gradle Android Plugin support
+    - Direct APK / AAB packaging and signing workflows
+
+    ```bash
+    # Open Android Studio
+    open ~/Applications/Android\ Studio.app
+    ```
+  </Tab>
+  <Tab title="IntelliJ IDEA CE">
+    Use IntelliJ IDEA Community Edition for:
+
+    - Pure Java or Kotlin library/backend development
+    - Projects that do not target Android (server-side, desktop, CLI tools)
+    - Working with Gradle or Maven build scripts in a non-Android context
+    - Kotlin Multiplatform projects where you need a lighter IDE
+
+    ```bash
+    # Open IntelliJ IDEA CE
+    open ~/Applications/IntelliJ\ IDEA\ CE.app
+    ```
+  </Tab>
+</Tabs>
+
+## Verifying the Full Setup
+
+Run these checks to confirm every component is working end-to-end:
+
+```bash
+# Java compiler
+javac -version
+
+# Android Debug Bridge
+adb version
+
+# List connected devices / emulators
+adb devices
+
+# SDK manager
+sdkmanager --version
+```

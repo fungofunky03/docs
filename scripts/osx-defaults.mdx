@@ -1,0 +1,288 @@
+---
+title: "osx.sh: Apply Developer-Friendly macOS Defaults"
+sidebarTitle: "osx.sh"
+description: "osx.sh applies over 100 macOS system defaults optimized for developers, covering Finder, Dock, keyboard, trackpad, Safari, and Terminal settings."
+---
+
+Out of the box, macOS ships with settings tuned for general consumers rather than developers. `osx.sh` flips over 100 of those defaults to values that reduce friction during development: hidden files become visible, key repeat rates become blazing fast, smart quotes are disabled, the Dock gets out of your way, and Safari gains developer tools. The changes cover nearly every corner of the operating system, from screensavers to Activity Monitor.
+
+<Warning>
+  Some changes made by `osx.sh` only take effect after you log out and log back in, or after a full restart. The script automatically kills and restarts affected apps (Finder, Dock, Safari, etc.) at the end, but for full effect, **restart your Mac** once the script completes.
+</Warning>
+
+<Tip>
+  Read through the `osx.sh` source before running it. The script is thoroughly commented, and many lines you might not want are already commented out (for example, setting a custom computer name or changing the standby delay). Comment out any block that doesn't match your preferences before running.
+</Tip>
+
+## Running osx.sh
+
+```bash
+./osx.sh
+```
+
+Or via the `.dots` launcher:
+
+```bash
+./.dots osx
+```
+
+The script prompts for your administrator password upfront and keeps the `sudo` session alive for the duration of the run.
+
+## What Gets Configured
+
+<AccordionGroup>
+  <Accordion title="General UI/UX">
+    - Disable transparency in the menu bar and Notification Center
+    - Set sidebar icon size to medium
+    - Expand save panels and print panels by default
+    - Save new documents to disk (not iCloud) by default
+    - Quit the printer app automatically after jobs complete
+    - Disable smart quotes and smart dashes (crucial for typing code)
+    - Reveal IP address, hostname, and OS version in the login window clock
+    - Restart automatically if the computer freezes
+    - Check for software updates daily instead of weekly
+    - Disable Notification Center and remove its menu bar icon
+    - Increase window resize speed for Cocoa applications
+
+    ```bash
+    defaults write com.apple.universalaccess reduceTransparency -bool true
+    defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
+    defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
+    defaults write NSGlobalDomain NSNavPanelExpandedStateForSaveMode -bool true
+    defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+    ```
+  </Accordion>
+
+  <Accordion title="SSD-Specific Tweaks">
+    These settings reduce unnecessary disk writes and improve SSD performance:
+
+    - Disable local Time Machine snapshots
+    - Disable hibernation (speeds up sleep mode entry)
+    - Remove and zero-lock the sleep image file to save disk space
+
+    ```bash
+    sudo tmutil disablelocal
+    sudo pmset -a hibernatemode 0
+    sudo rm -f /private/var/vm/sleepimage
+    sudo touch /private/var/vm/sleepimage
+    sudo chflags uchg /private/var/vm/sleepimage
+    ```
+
+    <Note>
+      If you are not running an SSD, consider commenting out the hibernation and sleep image lines — they may affect your Mac's ability to hibernate properly on spinning-disk drives.
+    </Note>
+  </Accordion>
+
+  <Accordion title="Keyboard & Input">
+    - Disable press-and-hold for keys in favor of key repeat
+    - Set a blazingly fast keyboard repeat rate (`KeyRepeat 1`, `InitialKeyRepeat 15`)
+    - Enable full keyboard access for all controls (Tab works in modal dialogs)
+    - Disable auto-correct
+    - Enable `Ctrl` + scroll wheel zoom
+
+    ```bash
+    defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
+    defaults write NSGlobalDomain KeyRepeat -int 1
+    defaults write NSGlobalDomain InitialKeyRepeat -int 15
+    defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+    defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
+    ```
+  </Accordion>
+
+  <Accordion title="Trackpad & Mouse">
+    - Enable tap to click for the current user and on the login screen
+    - Map the bottom-right corner to right-click
+    - Disable "natural" (Lion-style) scroll direction
+    - Increase Bluetooth audio quality for headphones and headsets
+
+    ```bash
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+    defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadCornerSecondaryClick -int 2
+    defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
+    defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40
+    ```
+  </Accordion>
+
+  <Accordion title="Screen & Screenshots">
+    - Require password immediately after sleep or screen saver begins
+    - Save screenshots to `~/Pictures/Screenshots` (creates the folder automatically)
+    - Save screenshots in PNG format
+    - Disable drop shadow in screenshots
+    - Enable subpixel font rendering on non-Apple LCDs
+    - Enable HiDPI display modes
+
+    ```bash
+    defaults write com.apple.screensaver askForPassword -int 1
+    defaults write com.apple.screensaver askForPasswordDelay -int 0
+    mkdir ${HOME}/Pictures/Screenshots
+    defaults write com.apple.screencapture location -string "${HOME}/Pictures/Screenshots"
+    defaults write com.apple.screencapture type -string "png"
+    defaults write com.apple.screencapture disable-shadow -bool true
+    ```
+  </Accordion>
+
+  <Accordion title="Finder">
+    - Show hidden files by default
+    - Show all filename extensions
+    - Show the path bar
+    - Display the full POSIX path in the Finder window title
+    - Search the current folder by default (not "This Mac")
+    - Disable the warning when changing a file extension
+    - Disable the warning before emptying the Trash
+    - Empty Trash securely by default
+    - Use list view in all Finder windows
+    - Show the `~/Library` folder
+    - Show hard drives, servers, and removable media on the desktop
+    - Enable spring loading for directories
+    - Avoid creating `.DS_Store` files on network volumes
+    - Enable AirDrop over Ethernet
+
+    ```bash
+    defaults write com.apple.finder AppleShowAllFiles -bool true
+    defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+    defaults write com.apple.finder ShowPathbar -bool true
+    defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
+    defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
+    defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
+    defaults write com.apple.finder WarnOnEmptyTrash -bool false
+    defaults write com.apple.finder EmptyTrashSecurely -bool true
+    chflags nohidden ~/Library
+    ```
+  </Accordion>
+
+  <Accordion title="Dock & Mission Control">
+    - Automatically hide and show the Dock
+    - Remove the auto-hide delay entirely (instant show/hide)
+    - Remove the animation when hiding/showing the Dock
+    - Set Dock icon size to 36 pixels
+    - Use the "scale" minimize effect
+    - Speed up Mission Control animations
+    - Don't animate opening applications from the Dock
+    - Show indicator lights for open applications
+    - Don't automatically rearrange Spaces based on recent use
+    - Set hot corners: top-left → Mission Control, top-right → Desktop, bottom-left → Screen Saver
+
+    ```bash
+    defaults write com.apple.dock autohide -bool true
+    defaults write com.apple.dock autohide-delay -float 0
+    defaults write com.apple.dock autohide-time-modifier -float 0
+    defaults write com.apple.dock tilesize -int 36
+    defaults write com.apple.dock mineffect -string "scale"
+    defaults write com.apple.dock expose-animation-duration -float 0.1
+    defaults write com.apple.dock mru-spaces -bool false
+    ```
+  </Accordion>
+
+  <Accordion title="Safari & WebKit">
+    - Disable sending search queries to Apple
+    - Show the full URL in the address bar
+    - Set the home page to `about:blank` for faster loading
+    - Prevent Safari from auto-opening "safe" files after downloading
+    - Hide the bookmarks bar by default
+    - Enable the Develop menu and Web Inspector
+    - Add a Web Inspector context menu item to all web views
+    - Enable Safari's debug menu
+
+    ```bash
+    defaults write com.apple.Safari UniversalSearchEnabled -bool false
+    defaults write com.apple.Safari SuppressSearchSuggestions -bool true
+    defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true
+    defaults write com.apple.Safari HomePage -string "about:blank"
+    defaults write com.apple.Safari AutoOpenSafeDownloads -bool false
+    defaults write com.apple.Safari IncludeDevelopMenu -bool true
+    defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
+    defaults write NSGlobalDomain WebKitDeveloperExtras -bool true
+    ```
+  </Accordion>
+
+  <Accordion title="Terminal & iTerm2">
+    - Use only UTF-8 in Terminal.app
+    - Apply the **Solarized Dark** theme to Terminal.app using an AppleScript
+    - Install the Solarized Dark color scheme for iTerm2
+    - Disable the "quit iTerm?" confirmation prompt
+
+    ```bash
+    defaults write com.apple.terminal StringEncodings -array 4
+    defaults write com.googlecode.iterm2 PromptOnQuit -bool false
+    ```
+  </Accordion>
+
+  <Accordion title="Mail">
+    - Disable send and reply animations
+    - Copy email addresses as plain `foo@example.com` (not `Foo Bar <foo@example.com>`)
+    - Add the `⌘ + Enter` keyboard shortcut to send mail
+    - Display emails in threaded mode, sorted oldest-first
+    - Disable inline attachment viewing (show icons instead)
+    - Disable automatic spell checking
+
+    ```bash
+    defaults write com.apple.mail DisableReplyAnimations -bool true
+    defaults write com.apple.mail DisableSendAnimations -bool true
+    defaults write com.apple.mail AddressesIncludeNameOnPasteboard -bool false
+    defaults write com.apple.mail DisableInlineAttachmentViewing -bool true
+    ```
+  </Accordion>
+
+  <Accordion title="Spotlight">
+    - Disable Spotlight indexing for newly mounted volumes
+    - Reorder Spotlight result categories (Applications and System Preferences first)
+    - Disable web search and Spotlight Suggestions result types
+    - Rebuild the Spotlight index from scratch
+
+    ```bash
+    sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
+    sudo mdutil -i on / > /dev/null
+    sudo mdutil -E / > /dev/null
+    ```
+  </Accordion>
+
+  <Accordion title="Time Machine">
+    - Prevent Time Machine from prompting to use new disks as backup volumes
+    - Disable local Time Machine backups (already handled by the SSD section)
+
+    ```bash
+    defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool true
+    hash tmutil &> /dev/null && sudo tmutil disablelocal
+    ```
+  </Accordion>
+
+  <Accordion title="Activity Monitor">
+    - Show the main window when launching Activity Monitor
+    - Visualize CPU usage in the Activity Monitor Dock icon
+    - Show all processes
+    - Sort by CPU usage by default
+
+    ```bash
+    defaults write com.apple.ActivityMonitor OpenMainWindow -bool true
+    defaults write com.apple.ActivityMonitor IconType -int 5
+    defaults write com.apple.ActivityMonitor ShowCategory -int 0
+    defaults write com.apple.ActivityMonitor SortColumn -string "CPUUsage"
+    ```
+  </Accordion>
+
+  <Accordion title="Google Chrome">
+    - Allow installing user scripts via GitHub Gist
+    - Disable the overly sensitive back-swipe gesture on trackpads and Magic Mouse
+
+    ```bash
+    defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
+    defaults write com.google.Chrome AppleEnableMouseSwipeNavigateWithScrolls -bool false
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## After the Script Finishes
+
+The script kills and relaunches all affected applications automatically:
+
+```bash
+for app in "Activity Monitor" "Address Book" "Calendar" "Contacts" "cfprefsd" \
+    "Dock" "Finder" "Google Chrome" "Mail" "Messages" \
+    "Safari" "Spectacle" "SystemUIServer" "iCal"; do
+    killall "${app}" > /dev/null 2>&1
+done
+echo "Done. Note that some of these changes require a logout/restart of your OS to take effect."
+```
+
+Even after this, **restart your Mac** to ensure all defaults are fully applied.

@@ -1,0 +1,201 @@
+---
+title: "AWS, Spark, and Hadoop Setup for macOS Developers"
+sidebarTitle: "AWS & Spark"
+description: "aws.sh configures the AWS CLI, boto, s3cmd, mrjob, Spark, and Hadoop MapReduce in Python 2 and 3 virtualenvs for cloud and big data development."
+---
+
+`aws.sh` extends the `py2-data` and `py3-data` virtualenvs created by `pydata.sh` with Amazon Web Services tooling, then installs Apache Spark system-wide via Homebrew and wires up a PySpark IPython Notebook profile so you can run Spark jobs interactively from a notebook. By the end of the script you have a full cloud and big data development stack ready on your Mac.
+
+## Prerequisites
+
+<Note>
+  Run `pydata.sh` before `aws.sh`. The script relies on `virtualenvwrapper` and the `py2-data` / `py3-data` environments that `pydata.sh` creates. If those environments are missing, the pip installs will fail.
+</Note>
+
+## Run the Script
+
+<CodeGroup>
+```bash Via .dots
+./.dots pydata aws
+```
+
+```bash Directly
+./aws.sh
+```
+</CodeGroup>
+
+## What the Script Does
+
+<Steps>
+  <Step title="Install AWS packages into py2-data">
+    Activates (or creates) the `py2-data` Python 2 environment and installs the full suite of AWS and MapReduce tools.
+
+    ```bash
+    workon py2-data
+    pip install boto
+    pip install awscli
+    pip install mrjob
+    pip install s3cmd
+    ```
+  </Step>
+
+  <Step title="Enable AWS CLI autocomplete">
+    Appends a `complete` directive to `~/.extra` so that Tab-completion works for all `aws` sub-commands in your shell.
+
+    ```bash
+    complete -C '~/.virtualenvs/py2-data/bin/aws_completer' aws
+    ```
+  </Step>
+
+  <Step title="Install AWS packages into py3-data">
+    Activates (or creates) the `py3-data` Python 3 environment and installs the Python 3–compatible subset (`mrjob` and `s3cmd` are Python 2 only).
+
+    ```bash
+    workon py3-data
+    pip install boto
+    pip install awscli
+    ```
+  </Step>
+
+  <Step title="Install Apache Spark via Homebrew">
+    Installs the `apache-spark` formula system-wide so the `spark-submit` and `pyspark` binaries are available globally.
+
+    ```bash
+    brew update
+    brew install apache-spark
+    ```
+  </Step>
+
+  <Step title="Configure the PySpark IPython Notebook profile">
+    Copies `init/profile_pyspark/` to `~/.ipython/profile_pyspark` and appends Spark environment variables to `~/.bash_profile` so IPython Notebook can discover and launch a local Spark context automatically.
+
+    ```bash
+    cp -r init/profile_pyspark/ ~/.ipython/profile_pyspark
+
+    export SPARK_HOME='/usr/local/Cellar/apache-spark/1.4.1'
+    export PYSPARK_SUBMIT_ARGS='--master local[2] pyspark-shell'
+    ```
+  </Step>
+</Steps>
+
+## Configuring AWS Credentials
+
+<Note>
+  Before using any AWS service, run `aws configure` to store your Access Key ID, Secret Access Key, default region, and output format. These values are saved to `~/.aws/credentials` and `~/.aws/config`.
+</Note>
+
+```bash
+aws configure
+# AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+# AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+# Default region name [None]: us-east-1
+# Default output format [None]: json
+```
+
+## AWS CLI Usage Examples
+
+```bash
+# List all S3 buckets
+aws s3 ls
+
+# List objects in a bucket
+aws s3 ls s3://my-bucket/
+
+# Copy a local file to S3
+aws s3 cp report.csv s3://my-bucket/reports/report.csv
+
+# List running EC2 instances
+aws ec2 describe-instances --filters "Name=instance-state-name,Values=running"
+
+# Tail CloudWatch logs
+aws logs tail my-log-group --follow
+```
+
+## Boto (Python S3 Access)
+
+`boto` is the classic Python AWS SDK. Use it to interact with S3 and other AWS services directly from Python scripts:
+
+```python
+import boto
+import boto.s3.connection
+
+# Connect to S3
+conn = boto.connect_s3()
+
+# List all buckets
+buckets = conn.get_all_buckets()
+for bucket in buckets:
+    print(bucket.name)
+
+# Read a file from a bucket
+bucket = conn.get_bucket('my-bucket')
+key = bucket.get_key('data/file.csv')
+contents = key.get_contents_as_string()
+```
+
+## s3cmd Usage
+
+`s3cmd` (Python 2 only) provides a Unix-style interface for S3. Configure it once with `s3cmd --configure`, then use it like a filesystem tool:
+
+```bash
+# List buckets
+s3cmd ls
+
+# Upload a file
+s3cmd put local-file.csv s3://my-bucket/data/
+
+# Download a file
+s3cmd get s3://my-bucket/data/file.csv ./file.csv
+
+# Sync a local directory to S3
+s3cmd sync ./output/ s3://my-bucket/output/
+```
+
+## MRJob — Hadoop MapReduce in Python
+
+`mrjob` lets you write MapReduce jobs in pure Python and run them locally, on Hadoop, or directly on Amazon EMR:
+
+```python
+from mrjob.job import MRJob
+
+class WordCount(MRJob):
+
+    def mapper(self, _, line):
+        for word in line.split():
+            yield word.lower(), 1
+
+    def reducer(self, word, counts):
+        yield word, sum(counts)
+
+if __name__ == '__main__':
+    WordCount.run()
+```
+
+Run locally:
+
+```bash
+python word_count.py input.txt
+```
+
+Run on Amazon EMR (configure `~/.mrjob.conf` first with your credentials, keypair, region, and bucket):
+
+```bash
+python word_count.py -r emr s3://my-bucket/input/
+```
+
+## PySpark with IPython Notebook
+
+After restarting your terminal, launch a PySpark-backed IPython Notebook session using the installed profile:
+
+```bash
+workon py2-data
+ipython notebook --profile=pyspark
+```
+
+A `SparkContext` (`sc`) is automatically available in every notebook cell. To verify Spark is working:
+
+```python
+# Count lines in a text file using Spark
+lines = sc.textFile("README.md")
+print(lines.count())
+```

@@ -1,0 +1,207 @@
+---
+title: "Vim Configuration Reference for Dev Setup"
+sidebarTitle: "Vim"
+description: "Dev Setup includes a .vimrc and .gvimrc with syntax highlighting, smart indentation, line numbers, and common editor settings pre-configured."
+---
+
+Dev Setup ships a `.vimrc` and a `.gvimrc` that turn a stock Vim installation into a comfortable everyday editor. The configuration is built around the Solarized Dark color scheme, sane defaults for search and whitespace handling, relative line numbers, and a small set of key mappings — all without relying on a plugin manager.
+
+## What the Vim Config Provides
+
+The `.vimrc` makes the following changes over Vim's defaults:
+
+- **Solarized Dark** colorscheme with transparent terminal background
+- **Syntax highlighting** and filetype detection enabled globally
+- **Relative line numbers** (falls back to absolute if the feature is unavailable)
+- **Smart search**: case-insensitive by default, incremental highlighting as you type, and highlighted matches
+- **Whitespace visualization**: tabs (`▸`), trailing spaces (`·`), end-of-line (`¬`), and non-breaking spaces (`_`) are made visible
+- **2-space tab width** (`tabstop=2`)
+- **OS clipboard** integration (requires `+clipboard` build)
+- **Persistent undo**, centralized backups, and centralized swap files under `~/.vim/`
+- **Mouse support** in all modes
+- **Per-directory `.vimrc`** files enabled (`exrc`) with unsafe-command protection (`secure`)
+
+## Key Settings
+
+<CodeGroup>
+```vim Appearance
+" Use the Solarized Dark theme
+set background=dark
+colorscheme solarized
+let g:solarized_termtrans=1
+
+" Enable line numbers
+set number
+
+" Use relative line numbers
+if exists("&relativenumber")
+    set relativenumber
+    au BufReadPost * set relativenumber
+endif
+
+" Highlight current line
+set cursorline
+
+" Always show status line
+set laststatus=2
+
+" Show the cursor position
+set ruler
+
+" Show the current mode
+set showmode
+
+" Show the filename in the window titlebar
+set title
+
+" Show the (partial) command as it's being typed
+set showcmd
+
+" Start scrolling three lines before the horizontal window border
+set scrolloff=3
+```
+
+```vim Search
+" Highlight searches
+set hlsearch
+
+" Ignore case of searches
+set ignorecase
+
+" Highlight dynamically as pattern is typed
+set incsearch
+
+" Add the g flag to search/replace by default
+set gdefault
+```
+
+```vim Indentation & Whitespace
+" Make tabs as wide as two spaces
+set tabstop=2
+
+" Show "invisible" characters
+set lcs=tab:▸\ ,trail:·,eol:¬,nbsp:_
+set list
+```
+
+```vim Editor Behavior
+" Make Vim more useful (disable strict Vi compatibility)
+set nocompatible
+
+" Use the OS clipboard by default
+set clipboard=unnamed
+
+" Enhance command-line completion
+set wildmenu
+
+" Allow cursor keys in insert mode
+set esckeys
+
+" Allow backspace in insert mode
+set backspace=indent,eol,start
+
+" Optimize for fast terminal connections
+set ttyfast
+
+" Use UTF-8 without BOM
+set encoding=utf-8 nobomb
+
+" Centralize backups, swapfiles and undo history
+set backupdir=~/.vim/backups
+set directory=~/.vim/swaps
+if exists("&undodir")
+    set undodir=~/.vim/undo
+endif
+
+" Disable error bells
+set noerrorbells
+
+" Don't show the intro message when starting Vim
+set shortmess=atI
+```
+
+```vim Filetype Rules
+" Automatic commands
+if has("autocmd")
+    " Enable file type detection
+    filetype on
+    " Treat .json files as .js
+    autocmd BufNewFile,BufRead *.json setfiletype json syntax=javascript
+    " Treat .md files as Markdown
+    autocmd BufNewFile,BufRead *.md setlocal filetype=markdown
+endif
+```
+</CodeGroup>
+
+## Key Mappings
+
+Dev Setup sets the `<leader>` key to `,` and defines two essential mappings:
+
+| Mapping | Action |
+|---------|--------|
+| `,ss` | Strip trailing whitespace from the current buffer without moving the cursor |
+| `,W` | Write the current file with `sudo` (useful when you open a root-owned file without `sudo vim`) |
+
+```vim
+" Change mapleader
+let mapleader=","
+
+" Strip trailing whitespace (,ss)
+noremap <leader>ss :call StripWhitespace()<CR>
+
+" Save a file as root (,W)
+noremap <leader>W :w !sudo tee % > /dev/null<CR>
+```
+
+## GUI Vim (.gvimrc)
+
+When you run MacVim or any graphical Vim build, `.gvimrc` overrides a few presentation settings on top of `.vimrc`:
+
+```vim
+" Use the Solarized Dark theme
+set background=dark
+colorscheme solarized
+
+" Use 14pt Monaco
+set guifont=Monaco:h14
+
+" Don't blink cursor in normal mode
+set guicursor=n:blinkon0
+
+" Better line-height
+set linespace=8
+```
+
+<Note>
+  `.gvimrc` is loaded **after** `.vimrc`, so any setting you put there takes precedence over its `.vimrc` equivalent for GUI builds only. Terminal Vim ignores `.gvimrc` entirely.
+</Note>
+
+## Vim Directory Layout
+
+Dev Setup creates three subdirectories under `~/.vim/` to keep generated files off your working tree:
+
+| Directory | Purpose |
+|-----------|---------|
+| `~/.vim/backups` | Backup files (`~` files) |
+| `~/.vim/swaps` | Swap files (`.swp`) |
+| `~/.vim/undo` | Persistent undo history |
+
+<Tip>
+  Create these directories before your first session to avoid Vim warnings:
+  ```bash
+  mkdir -p ~/.vim/{backups,swaps,undo}
+  ```
+</Tip>
+
+## Customizing Vim
+
+The cleanest way to extend the Dev Setup Vim config is to add your overrides at the end of `~/.vimrc` after `bootstrap.sh` has synced it, or to place them in a separate file that you source from `.vimrc`:
+
+```vim
+" At the end of ~/.vimrc — personal overrides
+set tabstop=4          " prefer 4-space tabs for your projects
+set expandtab          " use spaces instead of tab characters
+colorscheme desert     " switch to a different colorscheme
+```
+
+Because `bootstrap.sh` will overwrite `~/.vimrc` on the next sync, consider storing personal changes in `~/.extra` (for shell-level Vim settings) or maintaining your own fork of the repository.

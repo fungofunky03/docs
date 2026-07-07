@@ -1,0 +1,166 @@
+---
+title: "Customize Dev Setup for Your Workflow"
+sidebarTitle: "Customizing"
+description: "Adapt Dev Setup to your needs by running only selected scripts, commenting out unwanted settings, and adding personal configuration to the ~/.extra file."
+---
+
+Dev Setup is designed as a curated reference, not a one-size-fits-all installer. You're not expected — or meant — to run every script and install every tool. Pick what fits your workflow, skip what doesn't, and layer in your personal configuration without ever touching the tracked dotfiles. The sections below walk you through exactly how to do that.
+
+## Philosophy: a reference, not a prescription
+
+The project README says it plainly: *"dev-setup is geared to be more of an organized reference of various developer tools. You're not meant to install everything."* Every script is heavily commented so you can read through it, understand what each line does, and decide whether it belongs in your environment before you run anything.
+
+## Tailoring your setup
+
+<Steps>
+  <Step title="Run only the scripts you need">
+    The `.dots` entry-point script accepts command-line arguments that map directly to individual setup scripts. Pass only the names you want:
+
+    ```bash
+    # Core macOS setup only
+    ./.dots bootstrap osxprep brew osx
+
+    # Core setup plus Python data tools and AWS
+    ./.dots bootstrap osxprep brew osx pydata aws datastores
+
+    # Run every section
+    ./.dots all
+    ```
+
+    Available arguments and the scripts they invoke:
+
+    | Argument | Script | Purpose |
+    |---|---|---|
+    | `bootstrap` | `bootstrap.sh` | Sync dotfiles to `~` |
+    | `osxprep` | `osxprep.sh` | macOS updates + Xcode CLT |
+    | `brew` | `brew.sh` | Homebrew formulae and Cask apps |
+    | `osx` | `osx.sh` | macOS developer defaults |
+    | `pydata` | `pydata.sh` | Python data-analysis environment |
+    | `aws` | `aws.sh` | Spark, MapReduce, AWS tools |
+    | `datastores` | `datastores.sh` | MySQL, MongoDB, Redis, Elasticsearch |
+    | `web` | `web.sh` | Node.js, JSHint, Less |
+    | `android` | `android.sh` | Java, Android SDK, Android Studio |
+
+    You can also run any individual script directly without `.dots`:
+
+    ```bash
+    ./brew.sh
+    ```
+  </Step>
+
+  <Step title="Comment out lines you don't want before running">
+    Open any script in a text editor before running it and comment out (`#`) anything you don't need. For example, in `brew.sh` you might not want the CTF security tools or the LaTeX distribution:
+
+    ```bash
+    # Comment out formulae you don't need
+    #brew install aircrack-ng
+    #brew install hydra
+
+    # Uncomment to install LaTeX
+    #brew cask install --appdir="/Applications" mactex
+    ```
+
+    Because Homebrew is idempotent, you can re-run a script at any time after editing it — already-installed packages are skipped automatically.
+  </Step>
+
+  <Step title="Add personal configuration to ~/.extra">
+    The `bootstrap.sh` script sources `~/.extra` if the file exists, but it **never overwrites it**. This makes `~/.extra` the safe, permanent home for anything you don't want committed to a public repository — git credentials, API keys, custom aliases, and overrides to the default dotfiles.
+
+    Create or edit the file whenever you like:
+
+    ```bash
+    nano ~/.extra
+    # or
+    code ~/.extra
+    ```
+  </Step>
+</Steps>
+
+## The ~/.extra file
+
+`~/.extra` is sourced alongside all other dotfiles every time you open a new shell session. Use it for anything personal or sensitive. Below is a practical starting template:
+
+```bash
+# Git credentials
+git config --global user.name "Your Name"
+git config --global user.email "your@email.com"
+git config --global credential.helper osxkeychain
+
+# Custom aliases
+alias myproject="cd ~/Projects/myproject"
+
+# Custom exports
+export MY_API_KEY="your-key-here"
+```
+
+### What belongs in ~/.extra
+
+<CardGroup cols={2}>
+  <Card title="Git identity" icon="code-branch">
+    Your name, email, and credential helper so they stay out of version-controlled dotfiles.
+  </Card>
+  <Card title="API keys and secrets" icon="key">
+    Any token, secret, or credential that must never appear in a public repository.
+  </Card>
+  <Card title="Custom aliases" icon="terminal">
+    Project shortcuts, long commands you run often, or overrides to the default aliases in `.aliases`.
+  </Card>
+  <Card title="PATH additions" icon="folder-open">
+    Extra directories to prepend or append to `$PATH` that are specific to your machine.
+  </Card>
+</CardGroup>
+
+The actual `~/.extra` from the project author looks like this for reference:
+
+```bash
+# Git credentials
+GIT_AUTHOR_NAME="Donne Martin"
+GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+git config --global user.name "$GIT_AUTHOR_NAME"
+GIT_AUTHOR_EMAIL="donne.martin@gmail.com"
+GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+git config --global user.email "$GIT_AUTHOR_EMAIL"
+
+# Pip should only run if there is a virtualenv currently activated
+export PIP_REQUIRE_VIRTUALENV=true
+
+# Install or upgrade a global package
+# Usage: gpip install --upgrade pip setuptools virtualenv
+gpip() {
+    PIP_REQUIRE_VIRTUALENV="" pip "$@"
+}
+```
+
+<Warning>
+  Never commit sensitive values — API keys, passwords, or personal credentials — to dotfiles that are tracked by Git. Keep everything secret in `~/.extra` only. If you fork the dev-setup repo, double-check that `~/.extra` is listed in your `.gitignore` before pushing.
+</Warning>
+
+## Keeping your setup up to date
+
+### Update the dotfiles
+
+Pull the latest changes from the repo and re-run `bootstrap.sh` to sync your home directory:
+
+```bash
+cd dev-setup && git pull && ./bootstrap.sh
+```
+
+To skip the confirmation prompt:
+
+```bash
+cd dev-setup && git pull && set -- -f; source bootstrap.sh
+```
+
+### Re-run individual scripts
+
+Every script is safe to run again. Homebrew skips already-installed formulae, `osx.sh` re-applies defaults, and `pydata.sh` updates packages. Just run the script you want to refresh:
+
+```bash
+./brew.sh      # re-run Homebrew installs and upgrades
+./osx.sh       # re-apply macOS developer defaults
+./pydata.sh    # update Python virtual environments
+```
+
+<Tip>
+  After running `osx.sh` or `bootstrap.sh`, restart your terminal (or run `source ~/.bash_profile`) so all shell customizations take effect. A full system restart is required for some macOS system-level changes made by `osx.sh`.
+</Tip>

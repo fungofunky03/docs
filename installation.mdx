@@ -1,0 +1,165 @@
+---
+title: "Installing Dev Setup on macOS"
+sidebarTitle: "Installation"
+description: "Step-by-step instructions for cloning the dev-setup repository, running the preparation script, and choosing which setup modules to install."
+---
+
+Dev Setup uses a two-phase installation process: first you prepare macOS and install Xcode tooling, then you run whichever setup modules match your workflow. This page covers every detail — prerequisites, cloning, the preparation phase, available scripts, and how to drive the `.dots` launcher.
+
+<Warning>
+  Review each script before running it. Several scripts use `sudo` to install system-level packages and modify macOS defaults. Running unknown scripts with elevated privileges is a security risk — read `brew.sh`, `osx.sh`, and other scripts you plan to use so you understand exactly what will change on your machine.
+</Warning>
+
+## Prerequisites
+
+Before running any Dev Setup scripts, confirm your machine meets these requirements:
+
+| Requirement | Details |
+|---|---|
+| **macOS version** | macOS 10.9 Mavericks or later (tested on 10.10 Yosemite and 10.11 El Capitan) |
+| **Git** | Required to clone the repo; installed automatically by Xcode Command Line Tools |
+| **Admin privileges** | You must be an administrator — scripts invoke `sudo` during installation |
+| **Disk space** | Allow at least 5–10 GB for Homebrew formulae, GUI apps, and language runtimes |
+
+<Note>
+  If you're on macOS 10.8 Mountain Lion or older, you must download the Xcode Command Line Tools manually from [developer.apple.com/downloads](http://developer.apple.com/downloads) — `osxprep.sh` cannot install them automatically on those versions.
+</Note>
+
+## Phase 1 — Clone the repository
+
+Clone Dev Setup to a convenient location on your machine and enter the project directory.
+
+```bash
+git clone https://github.com/donnemartin/dev-setup.git && cd dev-setup
+```
+
+All subsequent commands in this guide assume you are inside the `dev-setup` directory.
+
+<Tip>
+  If Git isn't available yet (fresh Mac, no Xcode tools), download the `.dots` launcher directly and let it bootstrap everything for you:
+
+  ```bash
+  curl -O https://raw.githubusercontent.com/donnemartin/dev-setup/master/.dots && ./.dots [args]
+  ```
+</Tip>
+
+## Phase 2 — Prepare macOS with osxprep.sh
+
+Run `osxprep.sh` before any other script. It performs two jobs:
+
+1. Installs all pending macOS software updates via `softwareupdate`
+2. Installs the **Xcode Command Line Tools** (compilers, `git`, `make`, etc.)
+
+```bash
+./osxprep.sh
+```
+
+A dialog box will appear to confirm the Xcode installation — click **Install** and follow the on-screen prompts. Once the tools are installed, the script exits and you can move on to Phase 3.
+
+<Warning>
+  If macOS updates require a system restart, your machine will reboot. After logging back in, `cd` back into the `dev-setup` directory and run `./osxprep.sh` again. It will skip completed steps and finish the Xcode installation.
+</Warning>
+
+## Phase 3 — Run setup scripts
+
+With macOS prepared, use the `.dots` launcher to run your chosen modules.
+
+### The .dots launcher
+
+`.dots` is the master entry point for all setup scripts. It accepts any number of module names as arguments, prompts for confirmation and your administrator password once, then runs each module in sequence.
+
+<Tabs>
+  <Tab title="Run all modules">
+    Install every available module in one command:
+
+    ```bash
+    ./.dots all
+    ```
+  </Tab>
+  <Tab title="Run selected modules">
+    Pass only the module names you need:
+
+    ```bash
+    # Core developer tools
+    ./.dots bootstrap brew osx
+
+    # Core tools + Python data science
+    ./.dots bootstrap brew osx pydata
+
+    # Core tools + data stores + AWS
+    ./.dots bootstrap osxprep brew osx pydata aws datastores
+    ```
+  </Tab>
+  <Tab title="Run a single script directly">
+    You can also invoke any individual script without going through `.dots`:
+
+    ```bash
+    ./brew.sh
+    ./pydata.sh
+    ./datastores.sh
+    ```
+  </Tab>
+</Tabs>
+
+When `.dots` starts, it displays:
+
+```
+This script may overwrite existing files in your home directory. Are you sure? (y/n)
+```
+
+Type `y` to confirm. The script then requests your administrator password and refreshes it automatically in the background — you won't be prompted repeatedly.
+
+### Available scripts
+
+The table below lists every module and what it installs. Pass these names to `.dots`.
+
+| Argument | Script | Purpose |
+|---|---|---|
+| `bootstrap` | `bootstrap.sh` | Syncs dotfiles to your home directory — Vim config, bash profile, aliases, tab completion, and utility functions |
+| `osxprep` | `osxprep.sh` | Updates macOS via `softwareupdate` and installs Xcode Command Line Tools |
+| `brew` | `brew.sh` | Installs Homebrew, GNU core utilities, Python, Ruby/rbenv, Vim, wget, and a full suite of developer GUI apps via Homebrew Cask (iTerm2, Sublime Text, Chrome, VirtualBox, Docker, etc.) |
+| `osx` | `osx.sh` | Applies developer-friendly macOS system defaults — Finder settings, trackpad behavior, SSD optimizations, and more |
+| `pydata` | `pydata.sh` | Creates `py2-data` and `py3-data` virtualenvs; installs pip, virtualenv, virtualenvwrapper, NumPy, SciPy, Pandas, Matplotlib, Seaborn, Scikit-learn, IPython Notebook, Flask, and Bokeh |
+| `aws` | `aws.sh` | Installs AWS CLI, Boto, S3cmd, mrjob (MapReduce), and sets up Spark with IPython Notebook integration inside the `py2-data` virtualenv |
+| `datastores` | `datastores.sh` | Installs MySQL, PostgreSQL, MongoDB, Redis, and Elasticsearch via Homebrew; also installs MySQL Workbench |
+| `web` | `web.sh` | Installs Node.js, then uses npm to install CoffeeScript, Grunt CLI, JSHint, and Less |
+| `android` | `android.sh` | Installs Java, the Android SDK, Android Studio, and IntelliJ IDEA |
+
+### Script dependencies
+
+Some scripts depend on others being run first:
+
+<CardGroup cols={2}>
+  <Card title="aws.sh requires pydata.sh" icon="triangle-exclamation">
+    `aws.sh` installs AWS packages into the `py2-data` virtualenv created by `pydata.sh`. Always run `pydata` before `aws`.
+  </Card>
+  <Card title="brew.sh is a foundation" icon="layer-group">
+    Most other scripts assume Homebrew is available. Run `brew` early in your argument list to ensure all downstream formulae install correctly.
+  </Card>
+</CardGroup>
+
+## After installation
+
+When `.dots` finishes, it prints:
+
+```
+------------------------------
+Completed running .dots, restart your computer to ensure all updates take effect
+------------------------------
+```
+
+**Restart your Mac.** Many changes — new shells, PATH modifications, macOS preference updates — only take full effect after a reboot.
+
+### Updating later
+
+To update your dotfiles to the latest version from the repo at any time, re-run `bootstrap.sh`:
+
+```bash
+source bootstrap.sh
+```
+
+To skip the confirmation prompt when updating:
+
+```bash
+set -- -f; source bootstrap.sh
+```

@@ -1,0 +1,242 @@
+---
+title: "brew.sh: Install Developer Tools via Homebrew"
+sidebarTitle: "brew.sh"
+description: "brew.sh installs Homebrew and a curated set of command-line utilities, programming languages, and macOS desktop apps for your development environment."
+---
+
+`brew.sh` is the workhorse of the Dev Setup toolkit. It installs Homebrew if it isn't already present, updates any existing formulae, then works through a curated list of CLI utilities, programming languages, security tools, and desktop applications. The script is intentionally comprehensive — you're encouraged to read through it and comment out anything you don't need before running it.
+
+<Note>
+  `brew.sh` automatically installs Homebrew if it isn't found on your system. You don't need to install Homebrew separately before running this script.
+</Note>
+
+## Running brew.sh
+
+```bash
+./brew.sh
+```
+
+The script may take **20–40 minutes** to complete on a fresh machine because some formulae must be compiled from source. Quit and restart your terminal after it finishes for all PATH and shell changes to take full effect.
+
+You can also run it through the `.dots` launcher:
+
+```bash
+./.dots brew
+```
+
+## Auto-installing Homebrew
+
+If Homebrew isn't installed, the script installs it automatically before doing anything else:
+
+```bash
+if test ! $(which brew); then
+  echo "Installing homebrew..."
+  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+fi
+
+brew update
+brew upgrade --all
+```
+
+## What Gets Installed
+
+<AccordionGroup>
+  <Accordion title="GNU Core Utilities">
+    macOS ships with outdated BSD versions of common Unix utilities. `brew.sh` replaces them with their modern GNU counterparts:
+
+    | Formula | Purpose |
+    |---|---|
+    | `coreutils` | GNU versions of `ls`, `cp`, `mv`, `rm`, `date`, etc. — add `$(brew --prefix coreutils)/libexec/gnubin` to your `$PATH` |
+    | `moreutils` | Extra utilities like `sponge`, `ts`, `vidir` |
+    | `findutils` | GNU `find`, `locate`, `updatedb`, `xargs` (all `g`-prefixed) |
+    | `gnu-sed` | GNU `sed`, overwriting the built-in BSD `sed` |
+
+    ```bash
+    brew install coreutils
+    brew install moreutils
+    brew install findutils
+    brew install gnu-sed
+    ```
+  </Accordion>
+
+  <Accordion title="Bash 4 & Shell Completions">
+    macOS ships with Bash 3. `brew.sh` installs Bash 4 and sets it as your default shell:
+
+    ```bash
+    brew install bash
+    brew install bash-completion2
+
+    # Register the new shell
+    sudo bash -c 'echo /usr/local/bin/bash >> /etc/shells'
+
+    # Switch to Bash 4
+    chsh -s /usr/local/bin/bash
+    ```
+  </Accordion>
+
+  <Accordion title="Developer CLI Tools">
+    A broad set of general-purpose developer utilities:
+
+    | Formula | Purpose |
+    |---|---|
+    | `wget` | File downloads with IRI support |
+    | `git` | Latest version of Git |
+    | `git-lfs` | Git Large File Storage |
+    | `git-flow` | Git branching model extensions |
+    | `git-extras` | Useful git utilities (e.g. `git summary`, `git changelog`) |
+    | `hub` | GitHub-focused git wrapper |
+    | `vim` | Vim, overriding the system version |
+    | `grep` | GNU grep, overriding the system version |
+    | `openssh` | Latest OpenSSH |
+    | `screen` | Terminal multiplexer |
+    | `ack` | Source code search tool |
+    | `imagemagick` | Image processing (with WebP support) |
+    | `tree` | Directory tree listing |
+    | `rename` | Perl-based file rename utility |
+    | `ssh-copy-id` | Copy SSH keys to remote hosts |
+    | `pandoc` | Universal document converter |
+    | `p7zip` | 7-Zip archive tool |
+    | `pigz` | Parallel gzip |
+    | `pv` | Monitor data through a pipe |
+    | `lynx` | Terminal web browser |
+
+    ```bash
+    brew install wget --with-iri
+    brew install git git-lfs git-flow git-extras hub
+    brew install vim --override-system-vi
+    brew install homebrew/dupes/grep
+    brew install homebrew/dupes/openssh
+    brew install homebrew/dupes/screen
+    brew install ack tree rename ssh-copy-id pandoc
+    ```
+  </Accordion>
+
+  <Accordion title="Programming Languages">
+    `brew.sh` installs both Python 2 and Python 3, plus Ruby toolchain management via `rbenv`:
+
+    ```bash
+    brew install python
+    brew install python3
+
+    brew install ruby-build
+    brew install rbenv
+    ```
+
+    After installation, `rbenv init` is added to your `~/.extra` file so it loads automatically with each new shell session.
+
+    PHP 5.5 is also installed with GMP support:
+
+    ```bash
+    brew install homebrew/php/php55 --with-gmp
+    ```
+  </Accordion>
+
+  <Accordion title="Font & Web Font Tools">
+    Tools for working with web fonts:
+
+    ```bash
+    brew tap bramstein/webfonttools
+    brew install sfnt2woff
+    brew install sfnt2woff-zopfli
+    brew install woff2
+    ```
+  </Accordion>
+
+  <Accordion title="Security & CTF Tools">
+    A set of security research and capture-the-flag utilities:
+
+    | Formula | Purpose |
+    |---|---|
+    | `aircrack-ng` | Wi-Fi security auditing |
+    | `nmap` | Network scanner |
+    | `hydra` | Network login cracker |
+    | `john` | Password cracker |
+    | `sqlmap` | SQL injection tool |
+    | `binutils` | Binary analysis tools |
+    | `binwalk` | Firmware analysis |
+    | `fcrackzip` | ZIP password cracker |
+    | `tcpflow` | TCP stream capture |
+    | `tcpreplay` | Network traffic replay |
+    | `pngcheck` | PNG file integrity checker |
+    | `hashpump` | Hash length extension attacks |
+    | `knock` | Port-knock client |
+  </Accordion>
+
+  <Accordion title="Infrastructure & Services">
+    ```bash
+    brew install heroku/brew/heroku   # Heroku CLI
+    brew install docker               # Docker CLI
+    brew install boot2docker          # Docker VM for macOS
+    brew install libxml2 libxslt      # XML/XSLT parsing libraries
+    brew install pkg-config libffi    # Foreign function interface
+    ```
+  </Accordion>
+
+  <Accordion title="Desktop Apps via Homebrew Cask">
+    `brew.sh` installs macOS desktop applications using Homebrew Cask:
+
+    **Productivity & Utilities**
+    | App | Description |
+    |---|---|
+    | Alfred | Spotlight replacement and launcher |
+    | 1Password | Password manager |
+    | Dropbox | Cloud file sync |
+    | Evernote | Note-taking |
+
+    **Browsers & Communication**
+    | App | Description |
+    |---|---|
+    | Google Chrome | Primary browser |
+    | Firefox | Secondary browser |
+    | Skype | Video calls |
+    | Slack | Team messaging |
+
+    **Developer Tools**
+    | App | Description |
+    |---|---|
+    | iTerm2 | Enhanced terminal emulator |
+    | Sublime Text | Code editor |
+    | Atom | Open-source code editor |
+    | VirtualBox | Virtual machine manager |
+    | Vagrant | Development environment manager |
+    | Docker | Container platform |
+    | MacDown | Markdown editor |
+    | Java | JDK for Android and other tooling |
+    | XQuartz | X11 window system for macOS |
+
+    ```bash
+    brew cask install --appdir="/Applications" alfred
+    brew cask install --appdir="~/Applications" iterm2
+    brew cask install --appdir="/Applications" sublime-text
+    brew cask install --appdir="/Applications" atom
+    brew cask install --appdir="/Applications" virtualbox
+    brew cask install --appdir="/Applications" vagrant
+    brew cask install --appdir="/Applications" google-chrome
+    brew cask install --appdir="/Applications" firefox
+    brew cask install --appdir="/Applications" slack
+    brew cask install --appdir="/Applications" dropbox
+    ```
+  </Accordion>
+
+  <Accordion title="Quick Look Plugins">
+    Developer-friendly Quick Look extensions so you can preview source files, JSON, Markdown, CSVs, and more directly in Finder:
+
+    ```bash
+    brew cask install qlcolorcode qlstephen qlmarkdown quicklook-json \
+      qlprettypatch quicklook-csv betterzip qlimagesize webpquicklook \
+      suspicious-package quicklookase qlvideo
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Customizing brew.sh
+
+<Tip>
+  Before running `brew.sh`, open it in a text editor and comment out any formula or cask you don't need. Every line that starts with `brew install` or `brew cask install` is independently optional. For example, if you don't need the CTF security tools, comment out that entire block.
+</Tip>
+
+The script ends with a cleanup step to remove outdated cached versions:
+
+```bash
+brew cleanup
+```

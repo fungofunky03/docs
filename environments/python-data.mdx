@@ -1,0 +1,157 @@
+---
+title: "Python Data Science Environment Setup on macOS"
+sidebarTitle: "Python Data"
+description: "pydata.sh sets up Python 2 and Python 3 virtualenvs with NumPy, Pandas, Matplotlib, Scikit-learn, SciPy, IPython, Flask, and Bokeh pre-installed."
+---
+
+`pydata.sh` gives you a reproducible, isolated Python data science stack without touching your system Python. It installs `pip`, `virtualenv`, and `virtualenvwrapper`, then creates two ready-to-use virtual environments — `py2-data` for Python 2 and `py3-data` for Python 3 — each pre-loaded with the most common data analysis and visualization libraries.
+
+## Prerequisites
+
+<Note>
+  Run `brew.sh` before `pydata.sh`. Homebrew (installed by `brew.sh`) provides the Python 2 and Python 3 interpreters that the virtual environments are built on top of.
+</Note>
+
+## Run the Script
+
+<CodeGroup>
+```bash Via .dots
+./.dots pydata
+```
+
+```bash Directly
+./pydata.sh
+```
+</CodeGroup>
+
+## What the Script Does
+
+<Steps>
+  <Step title="Install pip">
+    Bootstraps `pip` via `easy_install`, then temporarily sets `PIP_REQUIRE_VIRTUALENV=false` so that `virtualenv` and `virtualenvwrapper` can be installed at the system level.
+
+    ```bash
+    easy_install pip
+    pip install virtualenv
+    pip install virtualenvwrapper
+    ```
+  </Step>
+
+  <Step title="Configure virtualenvwrapper">
+    Appends the `virtualenvwrapper` initialization block to `~/.extra` and sources it immediately, so the `workon`, `mkvirtualenv`, and related commands are available in your current shell session.
+
+    ```bash
+    export WORKON_HOME=~/.virtualenvs
+    source /usr/local/bin/virtualenvwrapper.sh
+    ```
+  </Step>
+
+  <Step title="Create the py2-data environment">
+    Runs `mkvirtualenv py2-data` to create a Python 2 virtual environment, then installs the full data science package set.
+
+    ```bash
+    mkvirtualenv py2-data
+    workon py2-data
+    pip install numpy scipy matplotlib pandas sympy \
+                nose unittest2 seaborn scikit-learn \
+                "ipython[all]" bokeh Flask sqlalchemy mysql-python
+    ```
+  </Step>
+
+  <Step title="Create the py3-data environment">
+    Runs `mkvirtualenv --python=/usr/local/bin/python3 py3-data` to create a Python 3 virtual environment and installs the same package set (swapping `mysql-python` for `mysqlclient`).
+
+    ```bash
+    mkvirtualenv --python=/usr/local/bin/python3 py3-data
+    workon py3-data
+    pip install numpy scipy matplotlib pandas sympy \
+                nose unittest2 seaborn scikit-learn \
+                "ipython[all]" bokeh Flask sqlalchemy mysqlclient
+    ```
+  </Step>
+
+  <Step title="Install the IPython Notebook default profile">
+    Copies the bundled `init/profile_default/` configuration into `~/.ipython/profile_default` so IPython Notebook starts with sensible defaults.
+
+    ```bash
+    mkdir -p ~/.ipython
+    cp -r init/profile_default/ ~/.ipython/profile_default
+    ```
+  </Step>
+</Steps>
+
+## Packages Installed
+
+<CardGroup cols={2}>
+  <Card title="py2-data (Python 2)" icon="python">
+    - **numpy** — N-dimensional array computing
+    - **scipy** — Scientific algorithms
+    - **matplotlib** — 2-D plotting
+    - **pandas** — DataFrames and time-series
+    - **sympy** — Symbolic mathematics
+    - **seaborn** — Statistical visualization
+    - **scikit-learn** — Machine learning
+    - **ipython[all]** — Enhanced REPL + Jupyter Notebook
+    - **bokeh** — Interactive web visualizations
+    - **Flask** — Lightweight web framework
+    - **sqlalchemy** — SQL toolkit / ORM
+    - **mysql-python** — MySQL adapter
+    - **nose / unittest2** — Testing
+  </Card>
+  <Card title="py3-data (Python 3)" icon="python">
+    - **numpy** — N-dimensional array computing
+    - **scipy** — Scientific algorithms
+    - **matplotlib** — 2-D plotting
+    - **pandas** — DataFrames and time-series
+    - **sympy** — Symbolic mathematics
+    - **seaborn** — Statistical visualization
+    - **scikit-learn** — Machine learning
+    - **ipython[all]** — Enhanced REPL + Jupyter Notebook
+    - **bokeh** — Interactive web visualizations
+    - **Flask** — Lightweight web framework
+    - **sqlalchemy** — SQL toolkit / ORM
+    - **mysqlclient** — MySQL adapter (Python 3 compatible)
+    - **nose / unittest2** — Testing
+  </Card>
+</CardGroup>
+
+## Activating an Environment
+
+After the script finishes, activate either environment at any time with `workon`:
+
+```bash
+# Switch to Python 2
+workon py2-data
+
+# Switch to Python 3
+workon py3-data
+
+# Leave the active environment
+deactivate
+```
+
+## Verifying the Installation
+
+After activating an environment, confirm the key packages loaded correctly:
+
+```bash
+workon py3-data
+
+# Check NumPy
+python -c "import numpy; print(numpy.__version__)"
+
+# Check Pandas
+python -c "import pandas; print(pandas.__version__)"
+
+# Check scikit-learn
+python -c "import sklearn; print(sklearn.__version__)"
+
+# Launch Jupyter Notebook
+ipython notebook
+```
+
+## Anaconda Alternative
+
+<Tip>
+  If you prefer an all-in-one distribution that manages Python, packages, and environments in a single installer, consider [Anaconda](https://www.anaconda.com/download). It ships with most of the same libraries plus the `conda` package manager. The `pydata.sh` approach is lighter-weight and keeps your system Python untouched — use whichever fits your workflow.
+</Tip>
